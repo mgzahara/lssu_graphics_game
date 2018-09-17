@@ -9,8 +9,6 @@ using namespace std;
 bool loop();
 void startBoard();
 
-const int BOARD_SIZE = 8;
-Tile board[BOARD_SIZE][BOARD_SIZE];
 
 int main(int argc, char** args) {
 
@@ -45,95 +43,147 @@ bool loop() {
   //static int frameCounter = 0;
   SDL_PumpEvents();
   
-  static int i, j, mouse_x, mouse_y;
+  static int mouse_x, mouse_y, clickRow = -1, clickCol = -1;
   //box selection base x, y
   static int box_x = -BOX_SIZE * 2;
   static int box_y = -BOX_SIZE * 2;
   static SDL_Rect top, right, bot, left;//SDL_Rect's for box selection
   
   // Event loop
-  while ( SDL_PollEvent( &e ) != 0 ) {
+  while ( SDL_PollEvent( &e ) != 0 ) 
+  {
     switch ( e.type ) {//no events
     case SDL_QUIT:
       //close button
       return false;
+
     case SDL_MOUSEBUTTONDOWN:
       if( SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT) )
-	{//grab mouse position on left click
-	  SDL_GetMouseState(&mouse_x, &mouse_y);
-	  //when this is all OOPed, the args to the above func
-	  //will be data members of an instance of a class
-	}
+      {//grab mouse position on left click
+        SDL_GetMouseState(&mouse_x, &mouse_y);
+        //when this is all OOPed, the args to the above func
+        //will be data members of an instance of a class
+
+        // handleLeftMouseClick(mouse_x, mouse_y);
+
+      }
       break;
     }
   }
+
   //black background
   SDL_SetRenderDrawColor(renderer, c.bla.r, c.bla.g, c.bla.b, 255);
   SDL_RenderClear(renderer);
   
-  //draw a grid in purple
-  SDL_SetRenderDrawColor(renderer, c.whi.r, c.whi.g, c.whi.b, 255);
-  for(i = 1; i <= (WINDOW_WIDTH / GRID_SIZE); i++){
+  //draw a grid in maroon
+  SDL_SetRenderDrawColor(renderer, c.mar.r, c.mar.g, c.mar.b, 255);
+  for(int i = 1; i <= (WINDOW_WIDTH / GRID_SIZE); i++){
     //draw vertical lines
     SDL_RenderDrawLine(renderer, i * GRID_SIZE, 0, i * GRID_SIZE, WINDOW_HEIGHT);
   }
-  for(i = 1; i <= (WINDOW_HEIGHT / GRID_SIZE); i++){
+  for(int i = 1; i <= (WINDOW_HEIGHT / GRID_SIZE); i++){
     //draw horizontal lines
     SDL_RenderDrawLine(renderer, 0, i * GRID_SIZE, WINDOW_WIDTH, i * GRID_SIZE);
   }
+  //draw all tiles
+  drawTiles();
+    //wont be suitable for animating the swapping of tiles,
+    //but i'll figure that out later - simple check against values of activeTile and swappingTile
 
-//draw all tiles
-  for(i = 0; i< BOARD_SIZE; i++)
-  {
-    for(j = 0; j < BOARD_SIZE; j++)
-    {
-      switch(board[i][j].getType())
-      {
-        case 1:
-          SDL_SetRenderDrawColor(renderer, c.whi.r, c.whi.g, c.whi.b, 255);
-        break;
-
-        case 2:
-          SDL_SetRenderDrawColor(renderer, c.red.r, c.red.g, c.red.b, 255);
-        break;
-
-        case 3:
-          SDL_SetRenderDrawColor(renderer, c.pur.r, c.pur.g, c.pur.b, 255);
-        break;
-
-        case 4:
-          SDL_SetRenderDrawColor(renderer, c.blu.r, c.blu.g, c.blu.b, 255);
-        break;
-
-        case 5:
-          SDL_SetRenderDrawColor(renderer, c.ora.r, c.ora.g, c.ora.b, 255);
-        break;
-
-        default:
-        printf("tile %d, %d has no type\n", i, j);
-      }
-      //draw each rect with proper coors and size
-      SDL_Rect r = {board[i][j].getCol() * GRID_SIZE + BOX_SIZE, 
-                    board[i][j].getRow() * GRID_SIZE + BOX_SIZE,
-                    GRID_SIZE - (2 * BOX_SIZE) + 1,
-                    GRID_SIZE - (2 * BOX_SIZE) + 1};
-      SDL_RenderFillRect(renderer, &r);
-    }
-  }
-
-
-  if( mouse_x % GRID_SIZE > BOX_SIZE and
+  if( mouse_x > 0 and mouse_y > 0 and
+      mouse_x % GRID_SIZE > BOX_SIZE and
       mouse_x % GRID_SIZE < GRID_SIZE - BOX_SIZE and
       mouse_y % GRID_SIZE > BOX_SIZE and
-      mouse_y % GRID_SIZE < GRID_SIZE - BOX_SIZE and
-      mouse_x > 0 and mouse_y > 0)
-  {//ignore clicks if they are within 3 pixels of a grid line
+      mouse_y % GRID_SIZE < GRID_SIZE - BOX_SIZE )
+  {
+    printf("inside restrictive box click if()\n");
+    //ignore clicks if they are within 3 pixels of a grid line
     //snap click to an int of row num and col num
-    box_x = (mouse_x / GRID_SIZE) * GRID_SIZE;
-    box_y = (mouse_y / GRID_SIZE) * GRID_SIZE;
-    //it may be advantageous to leave the above ints in terms of
-    //which row and col was selected so we can easily determine
-    //the object it affects
+    //indices into board array
+    clickCol = mouse_x / GRID_SIZE;
+    clickRow = mouse_y / GRID_SIZE;
+    //pixel coordinates for activeTile highlighting
+    box_x = clickCol * GRID_SIZE;
+    box_y = clickRow * GRID_SIZE;
+
+    Tile newlyClicked;
+    newlyClicked.setRow(  board[clickRow][clickCol].getRow()  );
+    newlyClicked.setCol(  board[clickRow][clickCol].getCol()  );
+    newlyClicked.setType( board[clickRow][clickCol].getType() );
+
+    printf("after newlyClicked assignment\n");
+
+    if( activeTile.isAdjacent( newlyClicked ) )
+    {//swap
+      printf("\n\n-------------\n");
+      printf("activeTile.isAdjacent()\n");
+      printf("box_x: %d\n", box_x);
+      printf("box_y: %d\n", box_y);
+      printf("clickRow: %d\n", clickRow);
+      printf("clickCol: %d\n", clickCol);
+      printf("board[clickRow][clickCol]");
+      printf("actual row:  %d\n", newlyClicked.getRow() );
+      printf("actual col:  %d\n", newlyClicked.getCol() );
+      printf("actual type: %d\n", newlyClicked.getType() );
+
+      switch( newlyClicked.getType() )
+      {//print color
+        case 1: printf("color: white\n");//w
+          break;
+        case 2: printf("color: red\n");//r
+          break;
+        case 3: printf("color: purple\n");//p
+          break;
+        case 4: printf("color: blue\n");//b
+          break;
+        case 5: printf("color: orange\n");//o
+          break;
+        default: printf("no valid color type :(\n");
+          break;
+      }
+
+      //right now the swap is as easy as switching the types of the Tiles
+      //eventually it will need to be animated - multithreaded? child process?
+
+      Tile temp;
+      temp.setRow(newlyClicked.getRow() );
+      temp.setCol(newlyClicked.getCol() );
+      temp.setType(newlyClicked.getType() );
+
+      board[clickRow][clickCol].setType( activeTile.getType() );//curr click Tile = activeTile
+
+      board[activeTile.getRow()]
+        [activeTile.getCol()]
+        .setType( temp.getType() );//activeTIle = curr click Tile
+      
+      //reset activeTile stats
+      activeTile.setRow(-2);
+      activeTile.setCol(-2);
+      activeTile.setType(0);
+
+      // //reset activeTile highlight box - not working?
+      top.x = -200;
+      top.y = -200;
+      bot.x = -200;
+      bot.y = -200;
+      left.x = -200;
+      left.y = -200;
+      right.x = -200;
+      right.y = -200;
+    }
+    else
+    { 
+      printf("\nbefore activeTile reassignment\n");
+      activeTile.setRow(newlyClicked.getRow() );
+      activeTile.setCol(newlyClicked.getCol() );
+      activeTile.setType(newlyClicked.getType() );
+
+      printf("\n\n-------------\nNOT activeTile.isAdjacent()\n");
+      
+      printf("activeTile row:  %d\n", activeTile.getRow() );
+      printf("activeTile col:  %d\n", activeTile.getCol() );
+      printf("activeTile type: %d\n", activeTile.getType() );
+    }
     
     //printf("mouse_x: %d\nmouse_y: %d\n---------\n", mouse_x, mouse_y);
     top = {box_x,
@@ -153,6 +203,8 @@ bool loop() {
 	     BOX_SIZE,
 	     GRID_SIZE};
   }
+
+
   //draw selection box
   SDL_SetRenderDrawColor(renderer, c.gre.r, c.gre.g, c.gre.b, 255);
   SDL_RenderFillRect(renderer, &top);
@@ -160,15 +212,28 @@ bool loop() {
   SDL_RenderFillRect(renderer, &bot);
   SDL_RenderFillRect(renderer, &left);
 
-  
   // Update window
   SDL_RenderPresent( renderer );
+  //reset 
   mouse_x = mouse_y = -1;
   return true;
 }
 
 void startBoard()
 {
+  //printBoard();
+  //verify here that all Tiles are of type 0 right now
+
+
+  //board is [row][col]
+  //col is inc inside inner loop, so the filling order is as follows
+    //(0, 0) then the entire first row gets filled left to right
+    //then the row is inc and it repeats
+//this means that there will never be Tiles to the right or below
+//as tiles are filled, check to the left and above for matches
+//if match was created, chose a diffrent type so as to not create a match
+
+
   int lower = 1;
   int upper = 5;
 
@@ -181,16 +246,5 @@ void startBoard()
       board[i][j].setType((rand() % (upper - lower + 1)) + lower);
     }
   }
-
-/*  //print board state  
-  for(int i = 0; i < BOARD_SIZE; i++)
-  {
-    printf("row #%d\n", i);
-    for(int j = 0; j < BOARD_SIZE; j++)
-    {
-      printf("\tcol#%d\n", j);
-      printf("\t\trow %d, col %d, type %d\n\n", board[i][j].getRow(), board[i][j].getCol(), board[i][j].getType());
-    }
-  }
-  */
+  //printBoard();
 }
