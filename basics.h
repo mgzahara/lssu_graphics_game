@@ -18,6 +18,7 @@ const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
 const int GRID_SIZE = 50;
 const int BOX_SIZE = 3;
+const int GEM_SIZE = 32;
 
 Tile board[BOARD_SIZE][BOARD_SIZE];//hold all board Tiles
 
@@ -27,6 +28,20 @@ struct colors
   {int r, g, b;};
   color whi, bla, red, blu, gre, pur, yel, ora, pin, cya, mar;
 }c;
+
+struct sprite
+{
+  struct velocity{ int x, y; };
+  struct bounds{ int left, right, top, bot; };
+
+  SDL_Texture* tex;
+  SDL_Rect src, dst;
+  int spriteCounter, startSprite, endSprite, scaleFactor;
+  velocity vel;
+  bounds bound;
+  int spriteWidth, spriteHeight;
+
+}gems[6];
 
 enum colorType
   {
@@ -131,11 +146,48 @@ bool initSDL() {
     return false;
   }
 
+
+
+  //set up gem1 sprite
+  gems[0].tex = loadImage("img/gem1.png");
+  gems[0].startSprite = 0;
+  gems[0].spriteCounter = 0;
+  gems[0].endSprite = 60;
+
+  //set up gem2 sprite
+  gems[1].tex = loadImage("img/gem2.png");
+  gems[1].startSprite = 0;
+  gems[1].spriteCounter = 0;
+  gems[1].endSprite = 60;
+
+  //set up gem3 sprite
+  gems[2].tex = loadImage("img/gem3.png");
+  gems[2].startSprite = 0;
+  gems[2].spriteCounter = 0;
+  gems[2].endSprite = 60;
+
+    //set up gem4 sprite
+  gems[3].tex = loadImage("img/gem4.png");
+  gems[3].startSprite = 0;
+  gems[3].spriteCounter = 0;
+  gems[3].endSprite = 60;
+
+  //set up gem5 sprite
+  gems[4].tex = loadImage("img/gem5.png");
+  gems[4].startSprite = 0;
+  gems[4].spriteCounter = 0;
+  gems[4].endSprite = 30;
+
+  //set up gem6 sprite
+  gems[5].tex = loadImage("img/gem6.png");
+  gems[5].startSprite = 0;
+  gems[5].spriteCounter = 0;
+  gems[5].endSprite = 60;
+
   //white out the screen
   SDL_SetRenderDrawColor( renderer, c.whi.r, c.whi.g, c.whi.b, 255 );
   SDL_RenderClear( renderer );
 
-    
   return true;
 }
 
@@ -184,41 +236,50 @@ void setColors()
 
 void drawTiles()
 {//draw all tiles
+
+  SDL_Texture* tex = NULL;
+  SDL_Rect src;
+  SDL_Rect dst;
+
   for(int i = 0; i< BOARD_SIZE; i++)
   {
     for(int j = 0; j < BOARD_SIZE; j++)
     {
-      switch(board[i][j].getType())
-      {
-        case 1:
-          SDL_SetRenderDrawColor(renderer, c.whi.r, c.whi.g, c.whi.b, 255);
-          break;
+      tex = gems[board[i][j].getType() - 1].tex;
 
-        case 2:
-          SDL_SetRenderDrawColor(renderer, c.red.r, c.red.g, c.red.b, 255);
-          break;
+      if(board[i][j].getCol() == activeTile.getCol() and
+        board[i][j].getRow() == activeTile.getRow() and
+        board[i][j].getType() == activeTile.getType())
+      {//current tile is 'active' - animate it
+        gems[board[i][j].getType() - 1].spriteCounter++;
 
-        case 3:
-          SDL_SetRenderDrawColor(renderer, c.pur.r, c.pur.g, c.pur.b, 255);
-          break;
-
-        case 4:
-          SDL_SetRenderDrawColor(renderer, c.blu.r, c.blu.g, c.blu.b, 255);
-          break;
-
-        case 5:
-          SDL_SetRenderDrawColor(renderer, c.ora.r, c.ora.g, c.ora.b, 255);
-          break;
-
-        default:
-          printf("tile %d, %d has no type\n", i, j);
+        src = {(( gems[board[i][j].getType() - 1].spriteCounter % 
+                    gems[board[i][j].getType() - 1].endSprite ) + 
+                  gems[board[i][j].getType() - 1].startSprite ) * 
+                GEM_SIZE,
+                0,
+                GEM_SIZE,
+                GEM_SIZE};
       }
-      //draw each rect with proper coors and size
-      SDL_Rect r = {board[i][j].getCol() * GRID_SIZE + BOX_SIZE, 
-                    board[i][j].getRow() * GRID_SIZE + BOX_SIZE,
-                    GRID_SIZE - (2 * BOX_SIZE) + 1,
-                    GRID_SIZE - (2 * BOX_SIZE) + 1};
-      SDL_RenderFillRect(renderer, &r);
+      else
+      {
+        src = {0,
+               0,
+               GEM_SIZE,
+               GEM_SIZE};
+      }
+      
+      dst = {board[i][j].getCol() * GRID_SIZE + BOX_SIZE + 6,
+              board[i][j].getRow() * GRID_SIZE + BOX_SIZE + 6,
+              GEM_SIZE,
+              GEM_SIZE};
+
+      SDL_RenderCopy(renderer, tex, &src, &dst);
+
+      //position of each image should be as follows:
+      //x: board[i][j].getCol() * GRID_SIZE + BOX_SIZE + 9
+      //y: board[i][j].getRow() * GRID_SIZE + BOX_SIZE + 9
+      
     }
   }
 

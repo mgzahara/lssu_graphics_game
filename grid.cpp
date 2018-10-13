@@ -27,7 +27,7 @@ int main(int argc, char** args) {
   while ( loop() ) {
     // wait before processing the next frame
     //prevents weird screen tearing
-    SDL_Delay(10);
+    SDL_Delay(20);
     }
 
   return 0;
@@ -231,7 +231,7 @@ void startBoard()
 
 
   int lower = 1;
-  int upper = 5;
+  int upper = 6;
 
   for(int i = 0; i < BOARD_SIZE; i++)
     {//row
