@@ -221,10 +221,6 @@ bool loop() {
 
 void startBoard()
 {
-  //printBoard();
-  //verify here that all Tiles are of type 0 right now
-
-
   //board is [row][col]
   //col is inc inside inner loop, so the filling order is as follows
     //(0, 0) then the entire first row gets filled left to right
@@ -238,13 +234,72 @@ void startBoard()
   int upper = 5;
 
   for(int i = 0; i < BOARD_SIZE; i++)
-  {
-    for(int j = 0; j < BOARD_SIZE; j++)
-    {
-      board[i][j].setRow(i);
-      board[i][j].setCol(j);
-      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-    }
-  }
+    {//row
+      for(int j = 0; j < BOARD_SIZE; j++)
+	{//col
+	  board[i][j].setRow(i);
+	  board[i][j].setCol(j);
+	  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+
+	  if(i >= 2)
+	    {//on/past row 2, check 2 above for matching type
+	      bool aboveMatch = false;
+	      bool leftMatch = false;
+	      if(board[i - 1][j].getType() == board[i - 2][j].getType() )
+		{
+		  aboveMatch = true;
+		}
+	      if(j >= 2)
+		{//on/past col 2, check 2 to the left for matching type
+		  if(board[i][j - 1].getType() == board[i][j - 2].getType() )
+		    {
+		      leftMatch = true;
+		    }
+		}
+	      //if above or left have matches AND current type matches either
+	      ///randomize until it doesnt
+	      if(aboveMatch and leftMatch)
+		{//both are a match
+		  while(board[i][j].getType() == board[i - 1][j].getType() or
+			board[i][j].getType() == board[i][j - 1].getType() )
+		    {//pick a new type while it makes a match with above or left
+		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		    }
+		}
+	      else if(aboveMatch)
+		{//only above is a match
+		  while(board[i][j].getType() == board[i - 1][j].getType() )
+		    {//pick a new type while it makes a match with above
+		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		    }
+		}
+	      else if(leftMatch)
+		{//only left is a match
+		  while(board[i][j].getType() == board[i][j - 1].getType() )
+		    {//pick a new type while it makes a match with left
+		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		    }
+		}
+	    }//end if i >= 2
+	  else
+	    {
+	      if(j >= 2)
+		{//on/past col 2, check 2 to the left for matching type
+		  bool leftMatch = false;
+		  if(board[i][j - 1].getType() == board[i][j - 2].getType() )
+		    {
+		      leftMatch = true;
+		    }
+		  if(leftMatch)
+		    {
+		      while(board[i][j].getType() == board[i][j - 1].getType() )
+			{//pick a new type while it makes a match with left
+			  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+			} 
+		    }
+		}//end if j >= 2
+	    }//end else
+	}//end inner for loop
+    }//end outer for loop
   //printBoard();
 }
