@@ -1,3 +1,10 @@
+/* TODO
+ *
+ * Tile class assignment operator
+ * Tile class << operator
+ */
+
+
 #include "SDL.h"
 #include "SDL_image.h"
 #include "iostream"
@@ -7,18 +14,10 @@
 using namespace std;
 
 bool loop();
-void startBoard();
+void drawBoard();
 
 
 int main(int argc, char** args) {
-
-/*  Tile t;
-  t.setCol(1);
-  t.setRow(2);
-  t.setType(3);
-*/
-  //R = (rand() % (upper - lower + 1)) + lower;
-
 
   if ( !initSDL() ) return 1;//if we cant init, end main
   
@@ -41,13 +40,16 @@ bool loop() {
   //both are used to limit screen refreshes further
   //static const int pause = 8;
   //static int frameCounter = 0;
+
+  //update SDLs event array
   SDL_PumpEvents();
   
   static int mouse_x, mouse_y, clickRow = -1, clickCol = -1;
-  //box selection base x, y
+  //coords for Tile selection box
   static int box_x = -BOX_SIZE * 2;
   static int box_y = -BOX_SIZE * 2;
-  static SDL_Rect top, right, bot, left;//SDL_Rect's for box selection
+  //SDL_Rect's for Tile selection box
+  static SDL_Rect top, right, bot, left;
   
   // Event loop
   while ( SDL_PollEvent( &e ) != 0 ) 
@@ -61,11 +63,6 @@ bool loop() {
       if( SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT) )
       {//grab mouse position on left click
         SDL_GetMouseState(&mouse_x, &mouse_y);
-        //when this is all OOPed, the args to the above func
-        //will be data members of an instance of a class
-
-        // handleLeftMouseClick(mouse_x, mouse_y);
-
       }
       break;
     }
@@ -96,7 +93,7 @@ bool loop() {
       mouse_y % GRID_SIZE > BOX_SIZE and
       mouse_y % GRID_SIZE < GRID_SIZE - BOX_SIZE )
   {
-    printf("inside restrictive box click if()\n");
+    //    printf("inside restrictive box click if()\n");
     //ignore clicks if they are within 3 pixels of a grid line
     //snap click to an int of row num and col num
     //indices into board array
@@ -106,15 +103,17 @@ bool loop() {
     box_x = clickCol * GRID_SIZE;
     box_y = clickRow * GRID_SIZE;
 
+    //would be better if Tile had a properly overloaded assignment operator
     Tile newlyClicked;
     newlyClicked.setRow(  board[clickRow][clickCol].getRow()  );
     newlyClicked.setCol(  board[clickRow][clickCol].getCol()  );
     newlyClicked.setType( board[clickRow][clickCol].getType() );
 
-    printf("after newlyClicked assignment\n");
+    //    printf("after newlyClicked assignment\n");
 
     if( activeTile.isAdjacent( newlyClicked ) )
     {//swap
+      /*
       printf("\n\n-------------\n");
       printf("activeTile.isAdjacent()\n");
       printf("box_x: %d\n", box_x);
@@ -141,48 +140,56 @@ bool loop() {
         default: printf("no valid color type :(\n");
           break;
       }
-
+      */
       //right now the swap is as easy as switching the types of the Tiles
       //eventually it will need to be animated - multithreaded? child process?
 
-      Tile temp;
-      temp.setRow(newlyClicked.getRow() );
-      temp.setCol(newlyClicked.getCol() );
-      temp.setType(newlyClicked.getType() );
+      cout << "before swap\n";
+      //test matchCheck function on every tile clicked
+      char* p1 = matchCheck(newlyClicked);
+      char* p2 = matchCheck(activeTile);
 
-      board[clickRow][clickCol].setType( activeTile.getType() );//curr click Tile = activeTile
+      cout << "matchString for activeTile:\n" << p2 << endl;
+      cout << "matchString for newlyClicked:\n" << p1 << endl << endl;
+
+
+      
+      //dont need?
+      //Tile temp;
+      //temp.setRow(newlyClicked.getRow() );
+      //temp.setCol(newlyClicked.getCol() );
+      //temp.setType(newlyClicked.getType() );
+
+      cout << "swapping\n";
+      
+      board[clickRow]
+	[clickCol]
+	.setType( activeTile.getType() );//curr click Tile = activeTile
 
       board[activeTile.getRow()]
         [activeTile.getCol()]
-        .setType( temp.getType() );//activeTIle = curr click Tile
+        .setType( newlyClicked.getType() );//activeTile = curr click Tile
       
       //reset activeTile stats
       activeTile.setRow(-2);
       activeTile.setCol(-2);
       activeTile.setType(0);
+      
+      cout << "post swap\n";
 
-      // //reset activeTile highlight box - not working?
-      top.x = -200;
-      top.y = -200;
-      bot.x = -200;
-      bot.y = -200;
-      left.x = -200;
-      left.y = -200;
-      right.x = -200;
-      right.y = -200;
     }
     else
     { 
-      printf("\nbefore activeTile reassignment\n");
+      //      printf("\nbefore activeTile reassignment\n");
       activeTile.setRow(newlyClicked.getRow() );
       activeTile.setCol(newlyClicked.getCol() );
       activeTile.setType(newlyClicked.getType() );
 
-      printf("\n\n-------------\nNOT activeTile.isAdjacent()\n");
+      //      printf("\n\n-------------\nNOT activeTile.isAdjacent()\n");
       
-      printf("activeTile row:  %d\n", activeTile.getRow() );
-      printf("activeTile col:  %d\n", activeTile.getCol() );
-      printf("activeTile type: %d\n", activeTile.getType() );
+      //      printf("activeTile row:  %d\n", activeTile.getRow() );
+      //      printf("activeTile col:  %d\n", activeTile.getCol() );
+      //      printf("activeTile type: %d\n", activeTile.getType() );
     }
     
     //printf("mouse_x: %d\nmouse_y: %d\n---------\n", mouse_x, mouse_y);
@@ -216,90 +223,17 @@ bool loop() {
   SDL_RenderPresent( renderer );
   //reset 
   mouse_x = mouse_y = -1;
+  //reset activeTile highlight box - not working?
+  if(activeTile.getRow() < 0 and activeTile.getCol() < 0)
+    {
+      top.x = -200;
+      top.y = -200;
+      bot.x = -200;
+      bot.y = -200;
+      left.x = -200;
+      left.y = -200;
+      right.x = -200;
+      right.y = -200;
+    }
   return true;
-}
-
-void startBoard()
-{
-  //board is [row][col]
-  //col is inc inside inner loop, so the filling order is as follows
-    //(0, 0) then the entire first row gets filled left to right
-    //then the row is inc and it repeats
-//this means that there will never be Tiles to the right or below
-//as tiles are filled, check to the left and above for matches
-//if match was created, chose a diffrent type so as to not create a match
-
-
-  int lower = 1;
-  int upper = 6;
-
-  for(int i = 0; i < BOARD_SIZE; i++)
-    {//row
-      for(int j = 0; j < BOARD_SIZE; j++)
-	{//col
-	  board[i][j].setRow(i);
-	  board[i][j].setCol(j);
-	  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-
-	  if(i >= 2)
-	    {//on/past row 2, check 2 above for matching type
-	      bool aboveMatch = false;
-	      bool leftMatch = false;
-	      if(board[i - 1][j].getType() == board[i - 2][j].getType() )
-		{
-		  aboveMatch = true;
-		}
-	      if(j >= 2)
-		{//on/past col 2, check 2 to the left for matching type
-		  if(board[i][j - 1].getType() == board[i][j - 2].getType() )
-		    {
-		      leftMatch = true;
-		    }
-		}
-	      //if above or left have matches AND current type matches either
-	      ///randomize until it doesnt
-	      if(aboveMatch and leftMatch)
-		{//both are a match
-		  while(board[i][j].getType() == board[i - 1][j].getType() or
-			board[i][j].getType() == board[i][j - 1].getType() )
-		    {//pick a new type while it makes a match with above or left
-		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-		    }
-		}
-	      else if(aboveMatch)
-		{//only above is a match
-		  while(board[i][j].getType() == board[i - 1][j].getType() )
-		    {//pick a new type while it makes a match with above
-		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-		    }
-		}
-	      else if(leftMatch)
-		{//only left is a match
-		  while(board[i][j].getType() == board[i][j - 1].getType() )
-		    {//pick a new type while it makes a match with left
-		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-		    }
-		}
-	    }//end if i >= 2
-	  else
-	    {
-	      if(j >= 2)
-		{//on/past col 2, check 2 to the left for matching type
-		  bool leftMatch = false;
-		  if(board[i][j - 1].getType() == board[i][j - 2].getType() )
-		    {
-		      leftMatch = true;
-		    }
-		  if(leftMatch)
-		    {
-		      while(board[i][j].getType() == board[i][j - 1].getType() )
-			{//pick a new type while it makes a match with left
-			  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-			} 
-		    }
-		}//end if j >= 2
-	    }//end else
-	}//end inner for loop
-    }//end outer for loop
-  //printBoard();
 }

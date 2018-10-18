@@ -67,6 +67,73 @@ SDL_Texture* loadKeyedImage(const char*);
 void drawTiles();
 void printBoard();
 void handleLeftMouseClick(int, int);
+void startBoard();
+char* matchCheck(Tile);
+
+
+char* matchCheck(Tile currTile)
+{//checks the Tile passed for a match
+ //results is a string containing ints of the number of matches in a direction
+ // "<left><right><above><below>"
+  
+  int leftMatches, rightMatches, aboveMatches, belowMatches, row, col, type;
+  static char matchString[10];
+  char intString[15];
+  
+  strcpy(matchString, "");//reset
+  leftMatches = rightMatches = aboveMatches = belowMatches = 0;
+  row = currTile.getRow();
+  col = currTile.getCol();
+  type = currTile.getType();
+
+  //currTile is board[row][col]
+
+  while(col >= 0 and board[row][col - 1].getType() == type)
+    {//while left matches
+      leftMatches++;
+      col--;
+    }
+  col = currTile.getCol();
+
+
+  while(col <= BOARD_SIZE and board[row][col + 1].getType() == type)
+    {//while right matches
+      rightMatches++;
+      col++;
+    }
+  col = currTile.getCol();
+
+  while(row >= 0 and board[row - 1][col].getType() == type)
+    {//while above matches
+      aboveMatches++;
+      row--;
+    }
+  row = currTile.getRow();
+
+
+  while(row <= BOARD_SIZE and board[row + 1][col].getType() == type)
+    {//while below matches
+      belowMatches++;
+      row++;
+    }
+  row = currTile.getRow();
+
+  //put together return string
+  sprintf(intString, "%d", leftMatches);
+  strcat(matchString, intString);
+  sprintf(intString, "%d", rightMatches);
+  strcat(matchString, intString);
+  sprintf(intString, "%d", aboveMatches);
+  strcat(matchString, intString);
+  sprintf(intString, "%d", belowMatches);
+  strcat(matchString, intString);
+
+  cout << "match string for Tile at\n\trow: " << row << "\n\tcol: " << col;
+  cout << endl << matchString << endl;
+
+  return matchString;
+
+}
 
 
 SDL_Texture* loadImage(const char* filename)
@@ -236,53 +303,54 @@ void setColors()
 
 void drawTiles()
 {//draw all tiles
-
+  
   SDL_Texture* tex = NULL;
   SDL_Rect src;
   SDL_Rect dst;
-
+  
   for(int i = 0; i< BOARD_SIZE; i++)
-  {
-    for(int j = 0; j < BOARD_SIZE; j++)
     {
-      tex = gems[board[i][j].getType() - 1].tex;
-
-      if(board[i][j].getCol() == activeTile.getCol() and
-        board[i][j].getRow() == activeTile.getRow() and
-        board[i][j].getType() == activeTile.getType())
-      {//current tile is 'active' - animate it
-        gems[board[i][j].getType() - 1].spriteCounter++;
-
-        src = {(( gems[board[i][j].getType() - 1].spriteCounter % 
-                    gems[board[i][j].getType() - 1].endSprite ) + 
-                  gems[board[i][j].getType() - 1].startSprite ) * 
-                GEM_SIZE,
-                0,
-                GEM_SIZE,
-                GEM_SIZE};
-      }
-      else
-      {
-        src = {0,
-               0,
-               GEM_SIZE,
-               GEM_SIZE};
-      }
-      
-      dst = {board[i][j].getCol() * GRID_SIZE + BOX_SIZE + 6,
-              board[i][j].getRow() * GRID_SIZE + BOX_SIZE + 6,
-              GEM_SIZE,
-              GEM_SIZE};
-
-      SDL_RenderCopy(renderer, tex, &src, &dst);
-
-      //position of each image should be as follows:
-      //x: board[i][j].getCol() * GRID_SIZE + BOX_SIZE + 9
-      //y: board[i][j].getRow() * GRID_SIZE + BOX_SIZE + 9
-      
-    }
-  }
-
+      for(int j = 0; j < BOARD_SIZE; j++)
+	{
+	  tex = gems[board[i][j].getType() - 1].tex;
+	  
+	  if(board[i][j].getCol() == activeTile.getCol() and
+	     board[i][j].getRow() == activeTile.getRow() and
+	     board[i][j].getType() == activeTile.getType() )
+	    {//current tile is 'active' - animate it
+	      gems[board[i][j].getType() - 1].spriteCounter++;
+	      
+	      src = {( ( gems[board[i][j].getType() - 1].spriteCounter % 
+			 gems[board[i][j].getType() - 1].endSprite ) + 
+		       gems[board[i][j].getType() - 1].startSprite ) * 
+		     GEM_SIZE,
+		     0,
+		     GEM_SIZE,
+		     GEM_SIZE};
+	    }
+	  //right here check if tile is special
+	  //add effects for special tiles
+	  else
+	    {//
+	      src = {0,
+		     0,
+		     GEM_SIZE,
+		     GEM_SIZE};
+	    }
+	  
+	  dst = {board[i][j].getCol() * GRID_SIZE + BOX_SIZE + 6,
+		 board[i][j].getRow() * GRID_SIZE + BOX_SIZE + 6,
+		 GEM_SIZE,
+		 GEM_SIZE};
+	  
+	  SDL_RenderCopy(renderer, tex, &src, &dst);
+	  
+	  //position of each image should be as follows:
+	  //x: board[i][j].getCol() * GRID_SIZE + BOX_SIZE + 9
+	  //y: board[i][j].getRow() * GRID_SIZE + BOX_SIZE + 9
+	  
+	}
+    }  
 }
 
 void printBoard()
@@ -301,6 +369,77 @@ void printBoard()
     }
   }
 }
+
+
+void startBoard()
+{
+  //board is [row][col]
+  //col is inc inside inner loop, so the filling order is as follows
+    //(0, 0) then the entire first row gets filled left to right
+    //then the row is inc and it repeats
+  //this means that there will never be Tiles to the right or below
+  //as tiles are filled, check to the left and above for matches
+  //if match was created, chose a diffrent type so as to not create a match
+
+  int lower = 1;
+  int upper = 6;
+
+  for(int i = 0; i < BOARD_SIZE; i++)
+    {//row
+      for(int j = 0; j < BOARD_SIZE; j++)
+	{//col
+	  board[i][j].setRow(i);
+	  board[i][j].setCol(j);
+	  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+
+	  if(i >= 2)
+	    {//on/past row 2, check 2 above for matching type
+	      bool aboveMatch = false;
+	      bool leftMatch = false;
+	      if(board[i - 1][j].getType() == board[i - 2][j].getType() )
+		{ aboveMatch = true; }
+	      if(j >= 2)
+		{//on/past col 2, check 2 to the left for matching type
+		  if(board[i][j - 1].getType() == board[i][j - 2].getType() )
+		    { leftMatch = true; }
+		}
+	      //if above or left have matches AND current type matches either one
+	      // randomize until it doesnt
+	      while( (aboveMatch or leftMatch) and
+		     (board[i][j].getType() == board[i - 1][j].getType() or
+		      board[i][j].getType() == board[i][j - 1].getType() ) )
+		{//pick a new type while it makes a match with above or left
+		  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		}
+	      /*	      while(aboveMatch and board[i][j].getType() == board[i - 1][j].getType() )
+		{//pick a new type while it makes a match with above
+		  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		}
+	      while(leftMatch and board[i][j].getType() == board[i][j - 1].getType() )
+		{//pick a new type while it makes a match with left
+		  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		  }*/
+	    }//end if i >= 2
+	  else
+	    {
+	      if(j >= 2)
+		{//on/past col 2, check 2 to the left for matching type
+		  bool leftMatch = false;
+		  if(board[i][j - 1].getType() == board[i][j - 2].getType() )
+		    { leftMatch = true; }
+
+		  while(leftMatch and board[i][j].getType() == board[i][j - 1].getType() )
+		    {//pick a new type while it makes a match with left
+		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		    } 
+		}//end if j >= 2
+	    }//end else
+	}//end inner for loop
+    }//end outer for loop
+  //printBoard();
+}
+
+
 
 /*
 void handleLeftMouseCLick(int mouse_x, int mouse_y)
