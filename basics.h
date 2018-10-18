@@ -121,10 +121,16 @@ char* matchCheck(Tile currTile)
   //put together return string
   sprintf(intString, "%d", leftMatches);
   strcat(matchString, intString);
+  strcat(matchString, " ");
+  
   sprintf(intString, "%d", rightMatches);
   strcat(matchString, intString);
+  strcat(matchString, " ");
+  
   sprintf(intString, "%d", aboveMatches);
   strcat(matchString, intString);
+  strcat(matchString, " ");
+  
   sprintf(intString, "%d", belowMatches);
   strcat(matchString, intString);
 
