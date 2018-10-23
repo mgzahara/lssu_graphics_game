@@ -10,15 +10,18 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Event e;
 //tile setup
-Tile activeTile;//highlighted Tile - first click
+int activeTileX;
+int activeTileY;
+
+//Tile activeTile;//highlighted Tile - first click
 Tile swappingTile;//never highlighted - second click
 
-const int BOARD_SIZE = 8;
+const int BOARD_SIZE = 8;//board is 8x8
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
-const int GRID_SIZE = 50;
-const int BOX_SIZE = 3;
-const int GEM_SIZE = 32;
+const int GRID_SIZE = 50;//size of one square on board
+const int BOX_SIZE = 3;//thickness of highlight box
+const int GEM_SIZE = 32;//size of gem sprites
 
 Tile board[BOARD_SIZE][BOARD_SIZE];//hold all board Tiles
 
@@ -66,12 +69,17 @@ SDL_Texture* loadImage(const char*);
 SDL_Texture* loadKeyedImage(const char*);
 void drawTiles();
 void printBoard();
-void handleLeftMouseClick(int, int);
+bool validLeftMouseClick(int, int);
 void startBoard();
-char* matchCheck(Tile);
+char* matchCheck(int, int, int);
+bool swap(Tile, Tile);
+void drawBoard();
+void swapTilePos(int, int, int, int);
+void drawHighlightBox(int, int);
 
 
-char* matchCheck(Tile currTile)
+
+char* matchCheck(int refRow, int refCol, int refType)
 {//checks the Tile passed for a match
  //results is a string containing ints of the number of matches in a direction
  // "<left><right><above><below>"
@@ -82,9 +90,9 @@ char* matchCheck(Tile currTile)
   
   strcpy(matchString, "");//reset
   leftMatches = rightMatches = aboveMatches = belowMatches = 0;
-  row = currTile.getRow();
-  col = currTile.getCol();
-  type = currTile.getType();
+  row = refRow;
+  col = refCol;
+  type = refType;
 
   //currTile is board[row][col]
 
@@ -93,7 +101,7 @@ char* matchCheck(Tile currTile)
       leftMatches++;
       col--;
     }
-  col = currTile.getCol();
+  col = refCol;
 
 
   while(col <= BOARD_SIZE and board[row][col + 1].getType() == type)
@@ -101,22 +109,21 @@ char* matchCheck(Tile currTile)
       rightMatches++;
       col++;
     }
-  col = currTile.getCol();
+  col = refCol;
 
   while(row >= 0 and board[row - 1][col].getType() == type)
     {//while above matches
       aboveMatches++;
       row--;
     }
-  row = currTile.getRow();
-
+  row = refRow;
 
   while(row <= BOARD_SIZE and board[row + 1][col].getType() == type)
     {//while below matches
       belowMatches++;
       row++;
     }
-  row = currTile.getRow();
+  row = refRow;
 
   //put together return string
   sprintf(intString, "%d", leftMatches);
@@ -178,9 +185,9 @@ bool initSDL() {
   //set up rgb values for colors
   setColors();
   //first activeTile will have unreal row and col
-  activeTile.setRow(-10);
-  activeTile.setCol(-10);
-  activeTile.setType(1);
+  activeTileX = -10;
+  activeTileY = -10;
+  //activeTile.setType(1);
   //swappingTile is also impossible
   swappingTile.setRow(-15);
   swappingTile.setCol(-15);
@@ -320,9 +327,8 @@ void drawTiles()
 	{
 	  tex = gems[board[i][j].getType() - 1].tex;
 	  
-	  if(board[i][j].getCol() == activeTile.getCol() and
-	     board[i][j].getRow() == activeTile.getRow() and
-	     board[i][j].getType() == activeTile.getType() )
+	  if(board[i][j].getCol() == activeTileX and
+	     board[i][j].getRow() == activeTileY)
 	    {//current tile is 'active' - animate it
 	      gems[board[i][j].getType() - 1].spriteCounter++;
 	      
@@ -344,17 +350,12 @@ void drawTiles()
 		     GEM_SIZE};
 	    }
 	  
-	  dst = {board[i][j].getCol() * GRID_SIZE + BOX_SIZE + 6,
-		 board[i][j].getRow() * GRID_SIZE + BOX_SIZE + 6,
+	  dst = {(int)board[i][j].getDstX(),
+		 (int)board[i][j].getDstY(),
 		 GEM_SIZE,
 		 GEM_SIZE};
 	  
 	  SDL_RenderCopy(renderer, tex, &src, &dst);
-	  
-	  //position of each image should be as follows:
-	  //x: board[i][j].getCol() * GRID_SIZE + BOX_SIZE + 9
-	  //y: board[i][j].getRow() * GRID_SIZE + BOX_SIZE + 9
-	  
 	}
     }  
 }
@@ -386,10 +387,10 @@ void startBoard()
   //this means that there will never be Tiles to the right or below
   //as tiles are filled, check to the left and above for matches
   //if match was created, chose a diffrent type so as to not create a match
-
+  
   int lower = 1;
   int upper = 6;
-
+  
   for(int i = 0; i < BOARD_SIZE; i++)
     {//row
       for(int j = 0; j < BOARD_SIZE; j++)
@@ -397,7 +398,10 @@ void startBoard()
 	  board[i][j].setRow(i);
 	  board[i][j].setCol(j);
 	  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-
+	  board[i][j].setDstX((float)(j * GRID_SIZE + BOX_SIZE + 6) );
+	  board[i][j].setDstY((float)(i * GRID_SIZE + BOX_SIZE + 6) );
+	  
+	  
 	  if(i >= 2)
 	    {//on/past row 2, check 2 above for matching type
 	      bool aboveMatch = false;
@@ -417,14 +421,6 @@ void startBoard()
 		{//pick a new type while it makes a match with above or left
 		  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
 		}
-	      /*	      while(aboveMatch and board[i][j].getType() == board[i - 1][j].getType() )
-		{//pick a new type while it makes a match with above
-		  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-		}
-	      while(leftMatch and board[i][j].getType() == board[i][j - 1].getType() )
-		{//pick a new type while it makes a match with left
-		  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-		  }*/
 	    }//end if i >= 2
 	  else
 	    {
@@ -433,7 +429,7 @@ void startBoard()
 		  bool leftMatch = false;
 		  if(board[i][j - 1].getType() == board[i][j - 2].getType() )
 		    { leftMatch = true; }
-
+		  
 		  while(leftMatch and board[i][j].getType() == board[i][j - 1].getType() )
 		    {//pick a new type while it makes a match with left
 		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
@@ -445,73 +441,218 @@ void startBoard()
   //printBoard();
 }
 
-
-
-/*
-void handleLeftMouseCLick(int mouse_x, int mouse_y)
+void drawBoard()
 {
-  int clickCol, clickRow, box_x, box_y;
-
-  if( mouse_x > 0 and mouse_y > 0 and
-      mouse_x % GRID_SIZE > BOX_SIZE and
-      mouse_x % GRID_SIZE < GRID_SIZE - BOX_SIZE and
-      mouse_y % GRID_SIZE > BOX_SIZE and
-      mouse_y % GRID_SIZE < GRID_SIZE - BOX_SIZE )
-  {//ignore clicks if they are within 3 pixels of a grid line
-    //snap click to an int of row num and col num
-    //indices into board array
-    clickCol = mouse_x / GRID_SIZE;
-    clickRow = mouse_y / GRID_SIZE;
-    //pixel coordinates for activeTile highlighting
-    box_x = clickCol * GRID_SIZE;
-    box_y = clickRow * GRID_SIZE;
-
-    if(activeTile.isAdjacent(board[clickRow][clickCol]) )
-    {//swap
-
-      //right now the swap is as easy as switching the types of the Tiles
-      //eventually it will need to be animated - multithreaded? child process?
-
-      board[clickRow][clickCol].setType( activeTile.getType() );//curr click Tile = activeTile
-
-      board[activeTile.getRow()]
-        [activeTile.getCol()]
-        .setType( board[clickRow][clickCol].getType() );//activeTIle = curr click Tile
-      
-      //reset activeTile stats
-      activeTile.setRow(-2);
-      activeTile.setCol(-2);
-      activeTile.setType(0);
-
-      // //reset activeTile highlight box
-      // top.x = -200;
-      // top.y = -200;
-      // bot.x = -200;
-      // bot.y = -200;
-      // left.x = -200;
-      // left.y = -200;
-      // right.x = -200;
-      // right.y = -200;
-    }
-    else{ activeTile = board[clickRow][clickCol]; }
-    
-    //printf("mouse_x: %d\nmouse_y: %d\n---------\n", mouse_x, mouse_y);
-    top = {box_x,
-	     box_y,
-	     GRID_SIZE,
-	     BOX_SIZE};
-    right = {box_x + GRID_SIZE - BOX_SIZE,
-	     box_y + 1,
-	     BOX_SIZE,
-	     GRID_SIZE - 1};
-    bot = {box_x + 1,
-	     box_y + GRID_SIZE - BOX_SIZE,
-	     GRID_SIZE - 1,
-	     BOX_SIZE};
-    left ={box_x,
-	     box_y,
-	     BOX_SIZE,
-	     GRID_SIZE};
+  //black background
+  SDL_SetRenderDrawColor(renderer, c.bla.r, c.bla.g, c.bla.b, 255);
+  SDL_RenderClear(renderer);
+  
+  //draw a grid in maroon
+  SDL_SetRenderDrawColor(renderer, c.mar.r, c.mar.g, c.mar.b, 255);
+  for(int i = 1; i <= (WINDOW_WIDTH / GRID_SIZE); i++){
+    //draw vertical lines
+    SDL_RenderDrawLine(renderer, i * GRID_SIZE, 0, i * GRID_SIZE, WINDOW_HEIGHT);
   }
+  for(int i = 1; i <= (WINDOW_HEIGHT / GRID_SIZE); i++){
+    //draw horizontal lines
+    SDL_RenderDrawLine(renderer, 0, i * GRID_SIZE, WINDOW_WIDTH, i * GRID_SIZE);
+  }
+  //draw all tiles
+  drawTiles();
+  
 }
-*/
+
+void swapTilePos(int row1, int col1, int row2, int col2)
+{
+  int temp = board[row1][col1].getType();
+  board[row1][col1].setType(board[row2][col2].getType());
+  board[row2][col2].setType(temp);
+}
+
+void drawHighlightBox(int box_x, int box_y)
+{
+  SDL_Rect top, right, bot, left;
+  top = {box_x,
+	 box_y,
+	 GRID_SIZE,
+	 BOX_SIZE};
+  right = {box_x + GRID_SIZE - BOX_SIZE,
+	   box_y + 1,
+	   BOX_SIZE,
+	   GRID_SIZE - 1};
+  bot = {box_x + 1,
+	 box_y + GRID_SIZE - BOX_SIZE,
+	 GRID_SIZE - 1,
+	 BOX_SIZE};
+  left ={box_x,
+	 box_y,
+	 BOX_SIZE,
+	 GRID_SIZE};
+
+  //draw selection box
+  SDL_SetRenderDrawColor(renderer, c.gre.r, c.gre.g, c.gre.b, 255);
+  SDL_RenderFillRect(renderer, &top);
+  SDL_RenderFillRect(renderer, &right);
+  SDL_RenderFillRect(renderer, &bot);
+  SDL_RenderFillRect(renderer, &left);
+  
+}
+
+
+bool validLeftMouseClick(int mouse_x, int mouse_y)
+{
+  return mouse_x > 0 and mouse_y > 0 and           //filter out loops w/o click
+    mouse_x % GRID_SIZE > BOX_SIZE and             //
+    mouse_x % GRID_SIZE < GRID_SIZE - BOX_SIZE and
+    mouse_y % GRID_SIZE > BOX_SIZE and
+    mouse_y % GRID_SIZE < GRID_SIZE - BOX_SIZE and
+    mouse_x < (BOARD_SIZE * GRID_SIZE) and
+    mouse_y < (BOARD_SIZE * GRID_SIZE);
+}
+
+bool swap(Tile a, Tile b)
+{
+  bool loop = true;
+  float aDstX = a.getDstX();
+  float aDstY = a.getDstY();
+  float bDstX = b.getDstX();
+  float bDstY = b.getDstY();
+  float aDeltaX, aDeltaY, bDeltaX, bDeltaY;
+  float delta = 2.5;
+  char* matchString;
+  bool matchMade1, matchMade2;
+  int left, right, above, below;
+  
+  printf("\nstart of swap()\n---------------\n");
+  fflush(stdout);
+  //printf("a dst:\n\tx: %f\n\ty: %f\n", aDstX, aDstY);
+  //printf("b dst:\n\tx: %f\n\ty: %f\n", bDstX, bDstY);
+
+  if(aDstY == bDstY)
+    {
+      if(aDstX > bDstX)
+	{//a left of b
+	  printf("a right of b\n");
+	  fflush(stdout);
+	  aDeltaX = -delta;
+	  aDeltaY = 0;
+	  bDeltaX = delta;
+	  bDeltaY = 0;
+	}
+      else if(aDstX < bDstX)
+	{//a right of b
+	  printf("a left of b\n");
+	  fflush(stdout);
+	  aDeltaX = delta;
+	  aDeltaY = 0;
+	  bDeltaX = -delta;
+	  bDeltaY = 0;
+	}
+      
+      while(board[a.getRow()][a.getCol()].getDstX() != bDstX and
+	    board[b.getRow()][b.getCol()].getDstX() != aDstX)
+	{//visual swap
+	  printf("swap x loop\n");
+	  fflush(stdout);
+
+	  while ( SDL_PollEvent( &e ) != 0 ) 
+	    {
+	      switch ( e.type )
+		{
+		case SDL_QUIT:
+		  exit(-1);
+		  break;
+		}
+	    }
+
+	  board[a.getRow()][a.getCol()]
+	    .setDstX( board[a.getRow()][a.getCol()]
+		      .getDstX() + aDeltaX );
+	  
+	  board[b.getRow()][b.getCol()]
+	    .setDstX( board[b.getRow()][b.getCol()]
+		      .getDstX() + bDeltaX );
+	  
+	  drawBoard();
+	  drawTiles();
+	  SDL_RenderPresent( renderer );
+	  SDL_Delay(30);
+	}
+    }
+  else if(aDstX == bDstX)
+    {    
+      if(aDstY > bDstY)
+	{//a below b
+	  printf("a below b\n");
+	  fflush(stdout);
+	  aDeltaX = 0;
+	  aDeltaY = -delta;
+	  bDeltaX = 0;
+	  bDeltaY = delta;
+	}
+      else if(aDstY < bDstY)
+	{//a above b
+	  printf("a above b\n");
+	  fflush(stdout);
+	  aDeltaX = 0;
+	  aDeltaY = delta;
+	  bDeltaX = 0;
+	  bDeltaY = -delta;
+	}
+
+      while(board[a.getRow()][a.getCol()].getDstY() != bDstY and
+	    board[b.getRow()][b.getCol()].getDstY() != aDstY)
+	{//visual swap
+	  printf("swap y loop\n");
+	  fflush(stdout);
+
+	  while ( SDL_PollEvent( &e ) != 0 ) 
+	    {
+	      switch ( e.type )
+		{
+		case SDL_QUIT:
+		  exit(-1);
+		  break;
+		}
+	    }
+
+	  board[a.getRow()][a.getCol()]
+	    .setDstY( board[a.getRow()][a.getCol()]
+		      .getDstY() + aDeltaY );
+	  
+	  board[b.getRow()][b.getCol()]
+	    .setDstY( board[b.getRow()][b.getCol()]
+		      .getDstY() + bDeltaY );
+	  
+	  drawBoard();
+	  drawTiles();
+	  SDL_RenderPresent( renderer );
+	  SDL_Delay(30);
+	}
+    }
+
+
+  //DOUBLE CHECK THAT THE MODIFIED MATCHCHECK() CALLS ARE WORKING
+  
+  //any matches made by putting b where a is?
+  matchString = matchCheck(a.getRow(), a.getCol(), b.getType() );
+  sscanf(matchString, "%d %d %d %d", &left, &right, &above, &below);
+  if(left + right >= 2 or above + below >= 2)
+    { matchMade1 = true; }
+
+  //any matches made by putting a where b is?
+  matchString = matchCheck(b.getRow(), b.getCol(), a.getType() );
+  sscanf(matchString, "%d %d %d %d", &left, &right, &above, &below);
+  if(left + right >= 2 or above + below >= 2)
+    { matchMade2 = true; }  
+	    
+  if(matchMade1 or matchMade2)
+    {//match was made!
+      return true;
+    }
+  else
+    {//no match made... swap back, return false;
+      //swap back
+      return false;
+    }
+}

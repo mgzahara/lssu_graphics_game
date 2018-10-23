@@ -6,6 +6,8 @@ class Tile{
         int row;
         int col;
         int type;
+	float spriteDstX;
+	float spriteDstY;
 
     public:
         //constructor
@@ -16,10 +18,14 @@ class Tile{
         void setRow(int r);
         void setCol(int c);
         void setType(int t);
+	void setDstX(float x);
+	void setDstY(float y);
         //getters
         int getRow();
         int getCol();
         int getType();
+	float getDstX();
+	float getDstY();
         
         bool isAdjacent(Tile t);
 

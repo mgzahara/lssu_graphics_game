@@ -29,6 +29,15 @@ void Tile::setType(int t)
 {
     type = t;
 }
+void Tile::setDstX(float x)
+{
+  spriteDstX = x;
+}
+void Tile::setDstY(float y)
+{
+  spriteDstY = y;
+}
+
 
 //getters
 int Tile::getRow()
@@ -43,6 +52,15 @@ int Tile::getType()
 {
     return type;
 }
+float Tile::getDstX()
+{
+  return spriteDstX;
+}
+float Tile::getDstY()
+{
+  return spriteDstY;
+}
+
 
 bool Tile::isAdjacent(Tile t)
 {//retruns true is this Tile and arg Tile are vertically or horizontally adjacent
