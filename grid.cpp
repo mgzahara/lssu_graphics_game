@@ -50,71 +50,73 @@ bool loop() {
   
   // Event loop
   while ( SDL_PollEvent( &e ) != 0 ) 
-  {
-    switch ( e.type )
-      {
-      case SDL_QUIT:
-	//close button
-	return false;
-	
-      case SDL_MOUSEBUTTONDOWN:
-	    if( SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT) )
-	      {//grab mouse position on left click
-	        SDL_GetMouseState(&mouse_x, &mouse_y);
-	      }
-	    break;
-
-      case SDL_KEYDOWN:
-        if(e.key.keysym.sym == SDLK_SPACE)
-        {//display board info
-
-            printBoard();
-
-        }
-      }
-  }
+    {
+      switch ( e.type )
+	{
+	case SDL_QUIT:
+	  //close button
+	  return false;
+	  
+	case SDL_MOUSEBUTTONDOWN:
+	  if( SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT) )
+	    {//grab mouse position on left click
+	      SDL_GetMouseState(&mouse_x, &mouse_y);
+	    }
+	  break;
+	  
+	case SDL_KEYDOWN:
+	  if(e.key.keysym.sym == SDLK_SPACE)
+	    {//display board info
+	      printBoard();
+	    }
+	}
+    }
   
   drawBoard();//draw grid & Tiles
-
+  
   
   if (validLeftMouseClick(mouse_x, mouse_y) )
     {
       bool matchMade1 = false, matchMade2 = false;
-
+      
       clickCol = mouse_x / GRID_SIZE;
       clickRow = mouse_y / GRID_SIZE;    
       
       if(activeTile.getRow() >= 0 and 
          activeTile.getCol() >= 0 and
          board[activeTile.getRow()][activeTile.getCol()]
-	      .isAdjacent( board[clickRow][clickCol] ) )
-
+	 .isAdjacent( board[clickRow][clickCol] ) )
+	
 	{//swap
-	  printf("just before swap()\n");
+	  //printf("just before swap()\n");
 	  int matches = swapAndCheck(board[activeTile.getRow()][activeTile.getCol()],
-	  		board[clickRow][clickCol]);
-
-      switch(matches)
-        {
-            case 0: //no match
-                printf("loop(): match == 0\n");
-                break;
+				     board[clickRow][clickCol]);
+	  
+	  switch(matches)
+	    {
+            case 0: //no match - handled by swapAndCheck
+	      //printf("loop(): match == 0\n");
+	      break;
             case 1: //match occured at coords of first arg
-                printf("loop(): match == 1\n");
-                break;
+	      //printf("loop(): match == 1\n");
+	      match(board[activeTile.getRow()][activeTile.getCol()]);
+	      break;
             case 2: //match occured at coords of second arg
-                printf("loop(): match == 2\n");
-                break;
+	      //printf("loop(): match == 2\n");
+	      match(board[clickRow][clickCol]);
+	      break;
             case 3: //match occured at coords of both args
-                printf("loop(): match == 3\n");
-                break;
+	      //printf("loop(): match == 3\n");
+	      match(board[activeTile.getRow()][activeTile.getCol()]);
+	      match(board[clickRow][clickCol]);
+	      break;
             default:
-                printf("Error: switch(matches) not 0, 1, 2, 3\n");
-                exit(-1);
-        }
-      //do not draw highlight box after second click
-      box_x = box_y = -200;
-
+	      printf("Error: switch(matches) not 0, 1, 2, 3\n");
+	      exit(-1);
+	    }
+	  //do not draw highlight box after second click
+	  box_x = box_y = -200;
+	  
 	  //reset activeTile stats
 	  activeTile.setRow(-5);
 	  activeTile.setCol(-5);
@@ -134,7 +136,7 @@ bool loop() {
   drawHighlightBox(box_x, box_y);
   // Update window
   SDL_RenderPresent( renderer );
-
+  
   //reset 
   mouse_x = mouse_y = -1;
   

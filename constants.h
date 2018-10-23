@@ -42,7 +42,7 @@ struct sprite
   bounds bound;
   int spriteWidth, spriteHeight;
 
-}gems[6];
+}gems[6], empty_gem;
 
 enum colorType
   {

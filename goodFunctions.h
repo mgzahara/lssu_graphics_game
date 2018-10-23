@@ -25,10 +25,11 @@ void printTileColor(int, int);
 void drawTiles();
 char* matchCheck(int, int, int);
 int swapAndCheck(Tile, Tile);
-void swap(Tile, Tile);
+void swap(Tile, Tile, bool);
 void drawBoard();
 void swapTilePos(int, int, int, int);
-
+//Tile which matched, Tiles to remove left, right, up, down
+void match(Tile, int, int, int);
 
 
 
@@ -120,6 +121,10 @@ bool initSDL() {
   gems[5].spriteCounter = 0;
   gems[5].endSprite = 60;
 
+  //set up empty sprite
+  empty_gem.tex = loadImage("img/empty_gem.png");
+  //  empty_gem.startSprite = 0;
+  
   //white out the screen
   SDL_SetRenderDrawColor( renderer, c.whi.r, c.whi.g, c.whi.b, 255 );
   SDL_RenderClear( renderer );

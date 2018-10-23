@@ -70,8 +70,8 @@ char* matchCheck(Tile currTile)
   sprintf(intString, "%d", belowMatches);
   strcat(matchString, intString);
 
-  cout << "match string for Tile at\n\trow: " << row << "\n\tcol: " << col;
-  cout << endl << matchString << endl;
+  //  cout << "match string for Tile at\n\trow: " << row << "\n\tcol: " << col;
+  //  cout << endl << matchString << endl;
 
   return matchString;
 
@@ -92,37 +92,42 @@ void drawTiles()
     {
       for(int j = 0; j < BOARD_SIZE; j++)
 	{
-      int gemType = board[i][j].getType();
-	  tex = gems[gemType].tex;
-
-	  if(board[i][j].getCol() == activeTile.getCol() and
-	     board[i][j].getRow() == activeTile.getRow() and
-	     board[i][j].getType() == activeTile.getType() )
-	    {//current tile is 'active' - animate it
-	      //printf("acttive tile is ");
-          //printTileColor(i, j);
-          //printf("\n");          
-
-	      gems[gemType].spriteCounter++;
-	      
-	      src = {( ( gems[gemType].spriteCounter % 
-			         gems[gemType].endSprite ) + 
-		         gems[gemType].startSprite ) * 
-		     GEM_SIZE,
-		     0,
-		     GEM_SIZE,
-		     GEM_SIZE};
+	  int gemType = board[i][j].getType();
+	  if(gemType == -1)
+	    {//empty gem
+	      tex = empty_gem.tex;
+	      src = {0, 0, GEM_SIZE, GEM_SIZE};
 	    }
-	  //right here check if tile is special
-	  //add effects for special tiles
 	  else
-	    {//
-	      src = {0,
-		     0,
-		     GEM_SIZE,
-		     GEM_SIZE};
-	    }
-	  
+	    {
+	      tex = gems[gemType].tex;
+	      
+	      if(board[i][j].getCol() == activeTile.getCol() and
+		 board[i][j].getRow() == activeTile.getRow() and
+		 board[i][j].getType() == activeTile.getType() )
+		{//current tile is 'active' - animate it
+		  
+		  gems[gemType].spriteCounter++;
+		  
+		  src = {( ( gems[gemType].spriteCounter % 
+			     gems[gemType].endSprite ) + 
+			   gems[gemType].startSprite ) * 
+			 GEM_SIZE,
+			 0,
+			 GEM_SIZE,
+			 GEM_SIZE};
+		}
+	      //right here check if tile is special
+	      //add effects for special tiles
+	      else
+		{//current tile is static
+		  src = {0,
+			 0,
+			 GEM_SIZE,
+			 GEM_SIZE};
+		}
+	      
+	    }//end if type == -1
 	  dst = {(int)board[i][j].getDstX(),
 		 (int)board[i][j].getDstY(),
 		 GEM_SIZE,
@@ -196,21 +201,12 @@ int swapAndCheck(Tile a, Tile b)
 //2 - second arg match
 //3 - both arg matches
 
-
-  float aDstX = a.getDstX();
-  float aDstY = a.getDstY();
-  float bDstX = b.getDstX();
-  float bDstY = b.getDstY();
-  float aDeltaX, aDeltaY, bDeltaX, bDeltaY;
-  float delta = 2.5;
   bool matchMade1 = false, matchMade2 = false;
   char* matchString;
   int left, right, above, below;
   
-  printf("\nstart of swap()\n---------------\n");
-  fflush(stdout);
-
-//
+  swap(a, b, false);
+/*
 //
 
 
@@ -316,41 +312,47 @@ int swapAndCheck(Tile a, Tile b)
     }
 
 //
-//
+*/
 
-
+/*
   //swap logical positions
   swapTilePos(a.getRow(), a.getCol(), b.getRow(), b.getCol() );
+
   //reassign 'a' texture destinations
   board[a.getRow()][a.getCol()]
     .setDstX((float)(a.getCol() * GRID_SIZE + BOX_SIZE + 6) );
+
   board[a.getRow()][a.getCol()]
     .setDstY((float)(a.getRow() * GRID_SIZE + BOX_SIZE + 6) );
+
   //reassign 'b' texture destinations
   board[b.getRow()][b.getCol()]
     .setDstX((float)(b.getCol() * GRID_SIZE + BOX_SIZE + 6) );
+
   board[b.getRow()][b.getCol()]
     .setDstY((float)(b.getRow() * GRID_SIZE + BOX_SIZE + 6) );
-  
+*/
   //check match for first Tile
   matchString = matchCheck(board[a.getRow()][a.getCol()]);
   sscanf(matchString, "%d %d %d %d", &left, &right, &above, &below);
-  printf("matchCheck() on a\n-----------------\n");
-  printf("\tleft: %d\n\tright: %d\n\tabove: %d\n\tbelow: %d\n\n",
-            left, right, above, below);
+  //printf("matchCheck() on a\n-----------------\n");
+  //printf("\tleft: %d\n\tright: %d\n\tabove: %d\n\tbelow: %d\n\n",
+  //left, right, above, below);
 
   if( (left + right) >= 2 or (above + below) >= 2)
-    { printf("matchMade1 is true\n"); matchMade1 = true; }
+    { //printf("matchMade1 is true\n");
+      matchMade1 = true; }
 
   //check match for second Tile
   matchString = matchCheck(board[b.getRow()][b.getCol()]);
   sscanf(matchString, "%d %d %d %d", &left, &right, &above, &below);
-  printf("matchCheck() on b\n-----------------\n");
-  printf("\tleft: %d\n\tright: %d\n\tabove: %d\n\tbelow: %d\n\n",
-            left, right, above, below);
+  //printf("matchCheck() on b\n-----------------\n");
+  //printf("\tleft: %d\n\tright: %d\n\tabove: %d\n\tbelow: %d\n\n",
+  //left, right, above, below);
 
   if( (left + right) >= 2 or (above + below) >= 2)
-    { printf("matchMade2 is true\n"); matchMade2 = true; }
+    { //printf("matchMade2 is true\n");
+      matchMade2 = true; }
 
   if (matchMade1 && matchMade2)
     {//both matched
@@ -368,7 +370,8 @@ int swapAndCheck(Tile a, Tile b)
     {//no matches made
       SDL_Delay(500);
       swap(board[a.getRow()][a.getCol()], 
-           board[b.getRow()][b.getCol()]);
+           board[b.getRow()][b.getCol()],
+	   true);
 
       return 0;
 
@@ -380,7 +383,7 @@ int swapAndCheck(Tile a, Tile b)
 
 
 
-void swap(Tile a, Tile b)
+void swap(Tile a, Tile b, bool redraw)
 {
   float aDstX = a.getDstX();
   float aDstY = a.getDstY();
@@ -388,21 +391,13 @@ void swap(Tile a, Tile b)
   float bDstY = b.getDstY();
   float aDeltaX, aDeltaY, bDeltaX, bDeltaY;
   float delta = 2.5;
-  char* matchString;
-  bool matchMade1, matchMade2;
-  int left, right, above, below;
-  
-  printf("\nstart of swap()\n---------------\n");
-  fflush(stdout);
-  //printf("a dst:\n\tx: %f\n\ty: %f\n", aDstX, aDstY);
-  //printf("b dst:\n\tx: %f\n\ty: %f\n", bDstX, bDstY);
 
   if(aDstY == bDstY)
     {
       if(aDstX > bDstX)
 	    {//a left of b
-	      printf("a right of b\n");
-	      fflush(stdout);
+	      //printf("a right of b\n");
+	      //fflush(stdout);
 	      aDeltaX = -delta;
 	      aDeltaY = 0;
 	      bDeltaX = delta;
@@ -410,8 +405,8 @@ void swap(Tile a, Tile b)
 	    }
       else if(aDstX < bDstX)
 	    {//a right of b
-	      printf("a left of b\n");
-	      fflush(stdout);
+	      //printf("a left of b\n");
+	      //fflush(stdout);
 	      aDeltaX = delta;
 	      aDeltaY = 0;
 	      bDeltaX = -delta;
@@ -421,8 +416,8 @@ void swap(Tile a, Tile b)
       while(board[a.getRow()][a.getCol()].getDstX() != bDstX and
 	    board[b.getRow()][b.getCol()].getDstX() != aDstX)
 	    {//visual swap
-	      printf("swap x loop\n");
-	      fflush(stdout);
+	      //printf("swap x loop\n");
+	      //fflush(stdout);
 
 	      while ( SDL_PollEvent( &e ) != 0 ) 
 	        {
@@ -451,8 +446,8 @@ void swap(Tile a, Tile b)
     {    
       if(aDstY > bDstY)
 	    {//a below b
-	      printf("a below b\n");
-	      fflush(stdout);
+	      //printf("a below b\n");
+	      //fflush(stdout);
 	      aDeltaX = 0;
 	      aDeltaY = -delta;
 	      bDeltaX = 0;
@@ -460,8 +455,8 @@ void swap(Tile a, Tile b)
 	    }
       else if(aDstY < bDstY)
 	    {//a above b
-	      printf("a above b\n");
-	      fflush(stdout);
+	      //printf("a above b\n");
+	      //fflush(stdout);
 	      aDeltaX = 0;
 	      aDeltaY = delta;
 	      bDeltaX = 0;
@@ -471,8 +466,8 @@ void swap(Tile a, Tile b)
       while(board[a.getRow()][a.getCol()].getDstY() != bDstY and
 	    board[b.getRow()][b.getCol()].getDstY() != aDstY)
 	    {//visual swap
-	      printf("swap y loop\n");
-	      fflush(stdout);
+	      //printf("swap y loop\n");
+	      //fflush(stdout);
 
 	      while ( SDL_PollEvent( &e ) != 0 ) 
 	        {
@@ -500,19 +495,64 @@ void swap(Tile a, Tile b)
 
   //swap logical positions
   swapTilePos(a.getRow(), a.getCol(), b.getRow(), b.getCol() );
+
   //reassign 'a' texture destinations
   board[a.getRow()][a.getCol()]
     .setDstX((float)(a.getCol() * GRID_SIZE + BOX_SIZE + 6) );
+
   board[a.getRow()][a.getCol()]
     .setDstY((float)(a.getRow() * GRID_SIZE + BOX_SIZE + 6) );
+
   //reassign 'b' texture destinations
   board[b.getRow()][b.getCol()]
     .setDstX((float)(b.getCol() * GRID_SIZE + BOX_SIZE + 6) );
+
   board[b.getRow()][b.getCol()]
     .setDstY((float)(b.getRow() * GRID_SIZE + BOX_SIZE + 6) );
 
-  //redraw  
-  drawBoard();
-  SDL_RenderPresent( renderer );
+  if(redraw)
+    {
+      //redraw  
+      drawBoard();
+      SDL_RenderPresent( renderer );
+    }
+}
 
+void match(Tile curr)
+{
+  int left, right, above, below;
+  char* matchString;
+
+  matchString = matchCheck(board[curr.getRow()][curr.getCol()]);
+  sscanf(matchString, "%d %d %d %d", &left, &right, &above, &below);
+
+  //take care of the easy one first
+  board[curr.getRow()][curr.getCol()].setType(-1);
+
+  if((left + right) >= 2)
+    {//is left-right the match?
+      while(left > 0)
+	{//remove all left
+	  board[curr.getRow()][curr.getCol() - left].setType(-1);
+	  left--;
+	}
+      while(right > 0)
+	{//remove all right
+	  board[curr.getRow()][curr.getCol() + right].setType(-1);
+	  right--;
+	}
+    }
+  if((above + below) >= 2)
+    {//is above-below the match?
+      while(above > 0)
+	{//remove all above
+	  board[curr.getRow() - above][curr.getCol()].setType(-1);
+	  above--;
+	}
+      while(below > 0)
+	{//remove all below
+	  board[curr.getRow() + below][curr.getCol()].setType(-1);
+	  below--;
+	}
+    }
 }

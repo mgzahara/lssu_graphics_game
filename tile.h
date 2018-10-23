@@ -6,6 +6,7 @@ class Tile{
         int row;
         int col;
         int type;
+	int hiddenType;
 	float spriteDstX;
 	float spriteDstY;
 
@@ -18,12 +19,16 @@ class Tile{
         void setRow(int r);
         void setCol(int c);
         void setType(int t);
+	void setHiddenType(int t);
 	void setDstX(float x);
 	void setDstY(float y);
-        //getters
+
+
+	//getters
         int getRow();
         int getCol();
         int getType();
+	int getHiddenType();
 	float getDstX();
 	float getDstY();
         
