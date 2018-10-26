@@ -8,29 +8,33 @@ using namespace std;
 
 
 
-bool initSDL();
-void quitSDL();
-void setColors();
-SDL_Texture* loadImage(const char*);
-SDL_Texture* loadKeyedImage(const char*);
-bool validLeftMouseClick(int, int);
-void drawHighlightBox(int, int);
-void startBoard();
-void printBoard();
-void printTileColor(int, int);
-
+bool initSDL();//keep
+void quitSDL();//keep
+void setColors();//keep
+SDL_Texture* loadImage(const char*);//keep
+SDL_Texture* loadKeyedImage(const char*);//keep
+bool validLeftMouseClick(int, int);//keep
+bool shouldSwapTiles(int, int);//keep
+void drawHighlightBox(int, int);//keep
+void startBoard();//keep
+void printBoard();//maybe
+void printTileColor(int, int);//maybe
+//1, 0, or -1
+int sign(int);
+int sign(float);
 
 //might have problems
 
 void drawTiles();
-char* matchCheck(int, int, int);
+char* matchCheck(int, int, int);//keep
 int swapAndCheck(Tile, Tile);
 void swap(Tile, Tile, bool);
 void drawBoard();
 void swapTilePos(int, int, int, int);
 //Tile which matched, Tiles to remove left, right, up, down
 void match(Tile, int, int, int);
-
+//new way
+void handleLeftMouseClick(int, int);
 
 
 bool initSDL() {
@@ -47,7 +51,7 @@ bool initSDL() {
   activeTile.setRow(-10);
   activeTile.setCol(-10);
   activeTile.setType(-1);
-  //swappingTile is also impossible
+  //swappingTile is also impossible - remove?
   swappingTile.setRow(-15);
   swappingTile.setCol(-15);
   swappingTile.setType(1);
@@ -85,48 +89,31 @@ bool initSDL() {
     return false;
   }
 
+    //MAKE THESE STATIC TO THE TILE CLASS
   //set up gem1 sprite
-  gems[0].tex = loadImage("img/gem1.png");
-  gems[0].startSprite = 0;
-  gems[0].spriteCounter = 0;
-  gems[0].endSprite = 60;
+  gems[0] = loadImage("img/gem1.png");
 
   //set up gem2 sprite
-  gems[1].tex = loadImage("img/gem2.png");
-  gems[1].startSprite = 0;
-  gems[1].spriteCounter = 0;
-  gems[1].endSprite = 60;
+  gems[1] = loadImage("img/gem2.png");
 
   //set up gem3 sprite
-  gems[2].tex = loadImage("img/gem3.png");
-  gems[2].startSprite = 0;
-  gems[2].spriteCounter = 0;
-  gems[2].endSprite = 60;
+  gems[2] = loadImage("img/gem3.png");
 
     //set up gem4 sprite
-  gems[3].tex = loadImage("img/gem4.png");
-  gems[3].startSprite = 0;
-  gems[3].spriteCounter = 0;
-  gems[3].endSprite = 60;
+  gems[3] = loadImage("img/gem4.png");
 
   //set up gem5 sprite
-  gems[4].tex = loadImage("img/gem5.png");
-  gems[4].startSprite = 0;
-  gems[4].spriteCounter = 0;
-  gems[4].endSprite = 30;
+  gems[4] = loadImage("img/gem5.png");
 
   //set up gem6 sprite
-  gems[5].tex = loadImage("img/gem6.png");
-  gems[5].startSprite = 0;
-  gems[5].spriteCounter = 0;
-  gems[5].endSprite = 60;
+  gems[5] = loadImage("img/gem6.png");
 
   //set up empty sprite
-  empty_gem.tex = loadImage("img/empty_gem.png");
-  //  empty_gem.startSprite = 0;
+  empty_gem = loadImage("img/empty_gem.png");
+
   
-  //white out the screen
-  SDL_SetRenderDrawColor( renderer, c.whi.r, c.whi.g, c.whi.b, 255 );
+  //black out the screen
+  SDL_SetRenderDrawColor( renderer, c.bla.r, c.bla.g, c.bla.b, 255 );
   SDL_RenderClear( renderer );
 
   return true;
@@ -214,6 +201,14 @@ bool validLeftMouseClick(int mouse_x, int mouse_y)
     mouse_y < (BOARD_SIZE * GRID_SIZE);
 }
 
+bool shouldSwapTiles(int clickRow, int clickCol)
+{
+  return ( (activeTile.getRow() >= 0) and
+	   (activeTile.getCol() >= 0) and
+	   (board[ activeTile.getRow() ][ activeTile.getCol() ]
+	    .isAdjacent(board[ clickRow ][ clickCol ]) ) ); 
+}
+
 void drawHighlightBox(int box_x, int box_y)
 {
   SDL_Rect top, right, bot, left;
@@ -261,6 +256,11 @@ void startBoard()
     {//row
       for(int j = 0; j < BOARD_SIZE; j++)
 	{//col
+
+	  //set matchBoard[][] feaults while I'm here
+	  matchBoard[i][j] = false;
+	  
+	  //set up Tiles
 	  board[i][j].setRow(i);
 	  board[i][j].setCol(j);
 	  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
@@ -354,4 +354,22 @@ void printTileColor(int row, int col)
         default:
           printf("\ntype is not 0-5!!\n");
         }
+}
+
+int sign(int x)
+{
+  if(x > 0)
+    { return 1; }
+  if(x < 0)
+    { return -1; }
+  return 0;
+}
+
+int sign(float x)
+{
+  if(x > 0)
+    { return 1; }
+  if(x < 0)
+    { return -1; }
+  return 0;
 }

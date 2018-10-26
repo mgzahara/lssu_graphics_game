@@ -3,8 +3,6 @@
  * Tile class assignment operator
  * Tile class << operator
  *
- * ACTIVE TILE IS WONKY
- * BECAUSE OF NEW SWAP()
  */
 
 
@@ -37,6 +35,69 @@ int main(int argc, char** args) {
   return 0;
 }
 
+bool loop()
+{
+  static int mouse_x = -1, mouse_y = -1;
+
+  //SDL event loop
+  while ( SDL_PollEvent( &e ) != 0 ) 
+    {
+      switch ( e.type )
+	{
+	case SDL_QUIT:
+	  //close button
+	  return false;
+	  
+	case SDL_MOUSEBUTTONDOWN:
+	  if( SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT) )
+	    {//grab mouse position on left click
+	      SDL_GetMouseState(&mouse_x, &mouse_y);
+	    }
+	  break;
+	}
+    }
+
+  //draw board grid - is a grid necessary?
+  drawBoard();
+
+  //handle any clicks made
+  handleLeftMouseClick(mouse_x, mouse_y);
+
+  //update all Tiles - go backwards to facilitate falling Tile sprite hand off
+  for(int i = 7; i >= 0; i--)
+    {
+      for(int j = 7; j >= 0; j--)
+	{
+	  board[i][j].update();
+	}
+    }
+  
+  //handle any matches
+  for(int i = 0; i < 8; i++)
+    {
+      for(int j = 0; j < 8; j++)
+	{
+	  if( matchBoard[i][j] )
+	    {
+	      matchCheck( board[i][j] );
+	    }
+	}
+    }
+
+  
+  drawHighlightBox(); //no need for args, they are global now
+
+  // Update window
+  SDL_RenderPresent( renderer );
+
+  //reset mouse position
+  mouse_x = mouse_y = -1;
+  
+  return true;
+}
+
+
+/*
 bool loop() {
   //update SDLs event array
   //SDL_PumpEvents();
@@ -77,7 +138,7 @@ bool loop() {
   
   if (validLeftMouseClick(mouse_x, mouse_y) )
     {
-      bool matchMade1 = false, matchMade2 = false;
+      //bool matchMade1 = false, matchMade2 = false;
       
       clickCol = mouse_x / GRID_SIZE;
       clickRow = mouse_y / GRID_SIZE;    
@@ -142,4 +203,4 @@ bool loop() {
   
   return true;
 }
-
+*/
