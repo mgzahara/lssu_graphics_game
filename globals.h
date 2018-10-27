@@ -1,5 +1,5 @@
-#ifndef GLOBALS
-#define GLOBALS
+#ifndef GLOBALS1
+#define GLOBALS1
 
 #include "iostream"
 #include "stdlib.h"
@@ -21,42 +21,17 @@ extern const int GRID_SIZE; //size of one square on board
 extern const int BOX_SIZE;  //thickness of highlight box
 extern const int GEM_SIZE;  //size of gem sprites
 
-extern Tile board[8][8]; //hold all board Tiles
-//parallel with above 2d array
+//parallel with board 2d array
 //indicates which Tiles need to be checked for matches
 extern bool matchBoard[8][8];
-extern Tile activeTile; //used as reference point for which Tile is 'active'
 
 extern int box_x;
 extern int box_y; //location for activeTile highlighting
 
-SDL_Texture *loadImage(const char *filename);
+extern Tile board[8][8]; //hold all board Tiles
+extern Tile activeTile;  //used as reference point for which Tile is 'active'
 
-// extern color c;
-
-// struct colors
-// {
-//   struct color
-//   {
-//     int r, g, b;
-//   };
-//   color whi, bla, red, blu, gre, pur, yel, ora, pin, cya, mar;
-// } c;
-
-//is colorType used anymore? maybe later?
-// enum colorType
-// {
-//   color_white,
-//   color_black,
-//   color_red,
-//   color_green,
-//   color_blue,
-//   color_purple,
-//   color_yellow,
-//   color_orange,
-//   color_pink,
-//   color_cyan,
-//   color_maroon
-// };
+extern SDL_Texture *gems[6];
+extern SDL_Texture *empty_gem;
 
 #endif

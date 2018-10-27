@@ -15,20 +15,23 @@
 
 using namespace std;
 
-// bool loop();
-bool initSDL();
 void quitSDL();
+bool initSDL();
+void loadTextures();
+SDL_Texture *loadImage(const char *);
 
 int main(int argc, char **args)
 {
-
-	if (!initSDL()) //if we cant init, end main
+	if (!initSDL())
 	{
+		//SDL did not init properly
 		return 1;
 	}
+
 	bool done = false;
 	int mouse_x = -1, mouse_y = -1;
-	/* dies */ Game game; //start game stuff
+
+	Game game; //start game stuff
 	game.startBoard();
 
 	while (!done)
@@ -72,6 +75,14 @@ int main(int argc, char **args)
 	}
 
 	return 0;
+}
+
+void quitSDL()
+{
+	// Quit - memory clean up
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
 }
 
 bool initSDL()
@@ -119,6 +130,8 @@ bool initSDL()
 		return false;
 	}
 
+	loadTextures();
+
 	//black out the screen
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
@@ -126,12 +139,31 @@ bool initSDL()
 	return true;
 }
 
-void quitSDL()
+void loadTextures()
 {
-	// Quit - memory clean up
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+	//load textures - just make them global
+	gems[0] = loadImage("img/gem1.png");
+	gems[1] = loadImage("img/gem2.png");
+	gems[2] = loadImage("img/gem3.png");
+	gems[3] = loadImage("img/gem4.png");
+	gems[4] = loadImage("img/gem5.png");
+	gems[5] = loadImage("img/gem6.png");
+	empty_gem = loadImage("img/empty_gem.png");
+}
+
+SDL_Texture *loadImage(const char *filename)
+{
+	SDL_Texture *texture;
+
+	texture = IMG_LoadTexture(renderer, filename);
+	if (texture == NULL)
+	{
+		printf("Could not load: %s\n", filename);
+		printf("IMG_LoadTexture Error: %s\n", IMG_GetError());
+		exit(1);
+	}
+
+	return texture;
 }
 
 /*

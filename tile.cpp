@@ -20,36 +20,6 @@ Tile::Tile()
   BOX_SIZE = 3;
   TILE_FALLING_SPEED = 2.5;
   TILE_SWAPPING_SPEED = 2.5;
-
-  //load textures
-  gems[0] = loadImage("img/gem1.png");
-  gems[1] = loadImage("img/gem2.png");
-  gems[2] = loadImage("img/gem3.png");
-  gems[3] = loadImage("img/gem4.png");
-  gems[4] = loadImage("img/gem5.png");
-  gems[5] = loadImage("img/gem6.png");
-  empty_gem = loadImage("img/empty_gem.png");
-
-  // gems[0] = IMG_LoadTexture(renderer, "img/gem1.png");
-  // gems[1] = IMG_LoadTexture(renderer, "img/gem2.png");
-  // gems[2] = IMG_LoadTexture(renderer, "img/gem3.png");
-  // gems[3] = IMG_LoadTexture(renderer, "img/gem4.png");
-  // gems[4] = IMG_LoadTexture(renderer, "img/gem5.png");
-  // gems[5] = IMG_LoadTexture(renderer, "img/gem6.png");
-  // empty_gem = IMG_LoadTexture(renderer, "img/empty_gem.png");
-
-  //end if cannot find images
-  // if (gems[0] == NULL or
-  //     gems[1] == NULL or
-  //     gems[2] == NULL or
-  //     gems[3] == NULL or
-  //     gems[4] == NULL or
-  //     gems[5] == NULL or
-  //     empty_gem == NULL)
-  // {
-  //   printf("IMG_LoadTexture Error: %s\n", IMG_GetError());
-  //   exit(1);
-  // }
 }
 Tile::~Tile()
 {

@@ -19,9 +19,7 @@ class Tile
 	int BOX_SIZE;
 	int TILE_FALLING_SPEED;
 	int TILE_SWAPPING_SPEED;
-	//statics
-	static SDL_Texture *gems[6];
-	static SDL_Texture *empty_gem;
+
 	//new
 	int spriteCounter;
 	int maxSprite;
