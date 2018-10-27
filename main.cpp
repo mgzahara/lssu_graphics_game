@@ -5,97 +5,134 @@
  *
  */
 
-
 #include "SDL.h"
 #include "SDL_image.h"
 #include "iostream"
-#include "tile.h"
 #include "string"
-#include "constants.h"
-#include "goodFunctions.h"
-#include "troublesomeFunctions.h"
-
+#include "globals.h"
+#include "tile.h"
+#include "game.h"
 
 using namespace std;
 
-bool loop();
+// bool loop();
+bool initSDL();
+void quitSDL();
 
-int main(int argc, char** args) {
-
-  if ( !initSDL() ) return 1;//if we cant init, end main
-  
-  startBoard();
-  
-  while ( loop() ) {
-    // wait before processing the next frame
-    //prevents weird screen tearing
-    SDL_Delay(20);
-    }
-
-  return 0;
-}
-
-bool loop()
+int main(int argc, char **args)
 {
-  static int mouse_x = -1, mouse_y = -1;
 
-  //SDL event loop
-  while ( SDL_PollEvent( &e ) != 0 ) 
-    {
-      switch ( e.type )
+	if (!initSDL()) //if we cant init, end main
 	{
-	case SDL_QUIT:
-	  //close button
-	  return false;
-	  
-	case SDL_MOUSEBUTTONDOWN:
-	  if( SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT) )
-	    {//grab mouse position on left click
-	      SDL_GetMouseState(&mouse_x, &mouse_y);
-	    }
-	  break;
+		return 1;
 	}
-    }
+	bool done = false;
+	int mouse_x = -1, mouse_y = -1;
+	/* dies */ Game game; //start game stuff
+	game.startBoard();
 
-  //draw board grid - is a grid necessary?
-  drawBoard();
-
-  //handle any clicks made
-  handleLeftMouseClick(mouse_x, mouse_y);
-
-  //update all Tiles - go backwards to facilitate falling Tile sprite hand off
-  for(int i = 7; i >= 0; i--)
-    {
-      for(int j = 7; j >= 0; j--)
+	while (!done)
 	{
-	  board[i][j].update();
+		//SDL event loop
+		while (SDL_PollEvent(&e) != 0)
+		{
+			switch (e.type)
+			{
+			case SDL_QUIT:
+				//close button
+				done = true;
+
+			case SDL_MOUSEBUTTONDOWN:
+				if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))
+				{ //grab mouse position on left click
+					SDL_GetMouseState(&mouse_x, &mouse_y);
+				}
+				break;
+			}
+		}
+
+		//draw board grid - is a grid necessary?
+		game.drawBoard();
+
+		game.handleLeftMouseClick(mouse_x, mouse_y);
+
+		game.updateBoard();
+
+		game.checkForMatches();
+
+		game.drawHighlightBox();
+
+		// Update window
+		SDL_RenderPresent(renderer);
+
+		//reset mouse position
+		mouse_x = mouse_y = -1;
+
+		SDL_Delay(20);
 	}
-    }
-  
-  //handle any matches
-  for(int i = 0; i < 8; i++)
-    {
-      for(int j = 0; j < 8; j++)
-	{
-	  if( matchBoard[i][j] )
-	    {
-	      matchCheck( board[i][j] );
-	    }
-	}
-    }
 
-  
-  drawHighlightBox(); //no need for args, they are global now
-
-  // Update window
-  SDL_RenderPresent( renderer );
-
-  //reset mouse position
-  mouse_x = mouse_y = -1;
-  
-  return true;
+	return 0;
 }
 
+bool initSDL()
+{
+	//set up everything for SDL
+	int x = atexit(quitSDL); //set exit function
+	if (x != 0)
+	{
+		fprintf(stderr, "cannot set exit function\n");
+		exit(EXIT_FAILURE);
+	}
+
+	//seed rand
+	srand(time(NULL));
+
+	// See last example for comments
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	{
+		cout << "Error initializing SDL: " << SDL_GetError() << endl;
+		//system("pause");
+		return false;
+	}
+	//create window
+	window = SDL_CreateWindow("Grid",
+														SDL_WINDOWPOS_UNDEFINED,
+														SDL_WINDOWPOS_UNDEFINED,
+														WINDOW_WIDTH,
+														WINDOW_HEIGHT,
+														SDL_WINDOW_SHOWN);
+
+	if (!window)
+	{
+		cout << "Error creating window: " << SDL_GetError() << endl;
+		//system("pause");
+		return false;
+	}
+	//create renderer
+	renderer = SDL_CreateRenderer(window,
+																-1,
+																SDL_RENDERER_ACCELERATED);
+
+	if (!renderer)
+	{
+		cout << "Error creating renderer: " << SDL_GetError() << endl;
+		return false;
+	}
+
+	//black out the screen
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderClear(renderer);
+
+	return true;
+}
+
+void quitSDL()
+{
+	// Quit - memory clean up
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
+}
 
 /*
 bool loop() {

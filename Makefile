@@ -1,5 +1,5 @@
 #OBJS specifies which files to compile as part of the project
-OBJS = grid.cpp tile.cpp
+OBJS = main.cpp tile.cpp game.cpp globals.cpp
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = test_out

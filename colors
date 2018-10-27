@@ -1,0 +1,35 @@
+void Game::setColors()
+{
+    c.pur.r = c.pur.b = c.mar.r = 128;
+    c.ora.g = 69;
+    c.pin.g = 20;
+    c.pin.b = 147;
+    c.whi.r =
+        c.whi.g =
+            c.whi.b =
+                c.red.r =
+                    c.blu.b =
+                        c.gre.g =
+                            c.ora.r =
+                                c.yel.r =
+                                    c.yel.g =
+                                        c.cya.g =
+                                            c.cya.b =
+                                                c.pin.r = 255;
+
+    c.bla.r =
+        c.bla.g =
+            c.bla.b =
+                c.red.g =
+                    c.red.b =
+                        c.blu.r =
+                            c.blu.g =
+                                c.gre.r =
+                                    c.gre.b =
+                                        c.pur.g =
+                                            c.ora.b =
+                                                c.yel.b =
+                                                    c.mar.g =
+                                                        c.mar.b =
+                                                            c.cya.r = 0;
+}
