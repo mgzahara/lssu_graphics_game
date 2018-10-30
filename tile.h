@@ -3,22 +3,38 @@
 
 #include "SDL.h"
 #include "SDL_image.h"
+// #include "globals.h"
 
 class Tile
 {
-  private:
+  public:
+	//states for Tile state machine
+	enum STATE
+	{
+		IDLE,
+		ACTIVE,
+		SWAP,
+		PAWS,
+		EMPTY,
+		FALL,
+		MATCH
+	};
+
 	int row;
 	int col;
-	int type; //sets sprite counter and max sprite
-	//int hiddenType; //unnecessary
+	int type;
+	//visual coords of sprite
 	float spriteDstX;
 	float spriteDstY;
 
 	//consts
 	int GRID_SIZE;
+	int GEM_SIZE;
 	int BOX_SIZE;
 	int TILE_FALLING_SPEED;
 	int TILE_SWAPPING_SPEED;
+
+	STATE state;
 
 	//new
 	int spriteCounter;
@@ -45,21 +61,13 @@ class Tile
 	int getSwappingDirection();
 	int getFallsRemaining();
 	int getSwapType();
-	bool getSwapping();
+
 	bool getFalling();
 	float getDefaultSpriteX();
 	float getDefaultSpriteY();
-	float getFallingSpeed();
+	float getFallingSpeed(); // public
 
-  public:
-	//constructor
-	Tile();
-	//destructor
-	~Tile();
-	//setters
-	void setRow(int r);
-	void setCol(int c);
-	void setType(int t);
+	//used to be public
 	//void setHiddenType(int t);//unnecessary
 	void setDstX(float x); //make private?
 	void setDstY(float y); //make private?
@@ -82,11 +90,27 @@ class Tile
 	float getDstY();
 	bool getActive();
 	bool isAdjacent(Tile t);
+	bool getSwapping();
 	//new
 	//the main function for a Tile
-	void update();
 
 	//Tile operator =  (Tile t);
 	//bool operator == (Tile t);
+
+	//constructor
+	Tile();
+	//destructor
+	~Tile();
+	//setters
+	void setRow(int r);
+	void setCol(int c);
+	void setType(int t);
+	void update();
+	//overload this function to your hearts content
+	int changeState(const char *, int, int, int);
+	int changeState(const char *, int);
+	int changeState(const char *);
+	//
+	bool isInMatchState();
 };
 #endif
