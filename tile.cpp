@@ -20,7 +20,7 @@ Tile::Tile()
   BOX_SIZE = 3;
   TILE_FALLING_SPEED = 2.5;
   TILE_SWAPPING_SPEED = 2.5;
-//  TILE_SWAPPING_SPEED = 5.012;
+  //  TILE_SWAPPING_SPEED = 5.012;
 
   state = STATE::IDLE;
 
@@ -38,10 +38,10 @@ Tile::~Tile()
 }
 void Tile::swapTypes()
 {
-//change the values of type and swapType with each other
-    int tmp = this->type;
-    this->type = this->swapType;
-    this->swapType = tmp;
+  //change the values of type and swapType with each other
+  int tmp = this->type;
+  this->type = this->swapType;
+  this->swapType = tmp;
 }
 void Tile::setMatchStatus(int s)
 {
@@ -327,9 +327,9 @@ void Tile::update()
       //tell game to check me for match
       this->state = STATE::MATCH;
       this->swapTypes(); //change type to swapType and swapType to type
-//reset visual coords
-    this->setDstX(getDefaultSpriteX());
-    this->setDstY(getDefaultSpriteY());
+                         //reset visual coords
+      this->setDstX(getDefaultSpriteX());
+      this->setDstY(getDefaultSpriteY());
       // this->setType(this->getSwapType());
       //swap my type right after texture is blitted to ensure the proper Tiles are drawn
     }
@@ -361,11 +361,11 @@ void Tile::update()
     }
     this->setDstX(this->getDstX() - deltaX);
     this->setDstY(this->getDstY() - deltaY);
-      
+
     if (this->getDstX() == (this->getDefaultSpriteX() - (sign(deltaX) * this->GRID_SIZE)) and
         this->getDstY() == (this->getDefaultSpriteY() - (sign(deltaY) * this->GRID_SIZE)))
-    { 
-/*
+    {
+      /*
     if (this->getDstX() == this->getDefaultSpriteX() and
         this->getDstY() == this->getDefaultSpriteY())
     { */
@@ -404,7 +404,7 @@ void Tile::update()
       this->setSpriteCounter((this->getSpriteCounter() + 1) % this->getMaxSprite());
     }
 
-    if (this->getDstY() >= (this->getDefaultSpriteY() + 50))
+    if (this->getDstY() >= (this->getDefaultSpriteY() + this->GRID_SIZE))
     {
       //texture visual is in place to be taken by next tile
       board[this->getRow() + 1][this->getCol()]
@@ -441,7 +441,7 @@ void Tile::update()
     //tile is visible
     SDL_RenderCopy(renderer, gems[this->getType()], &src, &dst);
   }
-/*
+  /*
   if (this->state == STATE::MATCH or this->state == STATE::IDLE)
   {
     //done falling or swapping or swapping back
@@ -454,7 +454,7 @@ void Tile::update()
 
 int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
 { //fall
-  printf("change state called... the one just for fall\n");
+  // printf("change state called... the one just for fall\n");
   if (newState == "fall")
   {
     printf("\trow: %d and col: %d - changed to state FALL\n", this->getRow(), this->getCol());
@@ -467,6 +467,7 @@ int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
     if (arg3 == 0)
     {
       //im done falling, go to MATCH state to wait for match checking
+      //this was just a hand off from tile above to me, the final loc for the falling tile
       this->state = STATE::MATCH;
       this->setFallsRemaining(0);
       this->setFallingSpeed(0);
@@ -535,9 +536,11 @@ int Tile::changeState(const char *newState)
   {
     printf("\trow: %d and col: %d - changed to state IDLE\n", this->getRow(), this->getCol());
     this->state = STATE::IDLE;
-//reset my visual coords
+    //reset my visual coords
     this->setDstX(this->getDefaultSpriteX());
     this->setDstY(this->getDefaultSpriteY());
+    //reset swap direction
+    this->setSwappingDirection(0);
   }
   else if (newState == "active")
   {
@@ -549,7 +552,9 @@ int Tile::changeState(const char *newState)
     //TELL EVERY TILE ABOVE TO FALL
     printf("\trow: %d and col: %d - changed to state EMPTY\n", this->getRow(), this->getCol());
     this->state = STATE::EMPTY;
-    this->setType(-1);//update type and swapType to -1 - empty
+    this->setType(-1); //update type and swapType to -1 - empty
+    //reset swap direction
+    this->setSwappingDirection(0);
   }
   else if (newState == "paws")
   {
