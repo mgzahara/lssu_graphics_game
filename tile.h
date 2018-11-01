@@ -27,6 +27,11 @@ class Tile
 	float spriteDstX;
 	float spriteDstY;
 
+	int matchStatus;
+	void setMatchStatus(int);
+	int getMatchStatus();
+void swapTypes();
+
 	//consts
 	int GRID_SIZE;
 	int GEM_SIZE;
@@ -65,7 +70,8 @@ class Tile
 	bool getFalling();
 	float getDefaultSpriteX();
 	float getDefaultSpriteY();
-	float getFallingSpeed(); // public
+	float getFallingSpeed();
+	float getFallingConst(); // public
 
 	//used to be public
 	//void setHiddenType(int t);//unnecessary

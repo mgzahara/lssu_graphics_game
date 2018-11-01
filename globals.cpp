@@ -19,7 +19,7 @@ const int GEM_SIZE = 32;  //size of gem sprites
 
 //parallel with board 2d array
 //indicates which Tiles need to be checked for matches
-bool matchBoard[8][8];
+// bool matchBoard[8][8];
 
 int box_x = -200; //location for activeTile highlighting
 int box_y = -200; //location for activeTile highlighting

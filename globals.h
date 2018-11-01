@@ -23,7 +23,7 @@ extern const int GEM_SIZE;  //size of gem sprites
 
 //parallel with board 2d array
 //indicates which Tiles need to be checked for matches
-extern bool matchBoard[8][8];
+// extern bool matchBoard[8][8];
 
 extern int box_x;
 extern int box_y; //location for activeTile highlighting

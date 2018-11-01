@@ -20,8 +20,13 @@ Tile::Tile()
   BOX_SIZE = 3;
   TILE_FALLING_SPEED = 2.5;
   TILE_SWAPPING_SPEED = 2.5;
+//  TILE_SWAPPING_SPEED = 5.012;
 
   state = STATE::IDLE;
+
+  this->setMaxSprite(30);
+
+  this->matchStatus = 0;
 
   // falling = false;
   // swapping = false;
@@ -30,6 +35,21 @@ Tile::Tile()
 Tile::~Tile()
 {
   return;
+}
+void Tile::swapTypes()
+{
+//change the values of type and swapType with each other
+    int tmp = this->type;
+    this->type = this->swapType;
+    this->swapType = tmp;
+}
+void Tile::setMatchStatus(int s)
+{
+  this->matchStatus = s;
+}
+int Tile::getMatchStatus()
+{
+  return this->matchStatus;
 }
 //setters
 void Tile::setRow(int r)
@@ -45,19 +65,7 @@ void Tile::setType(int t)
   this->type = t;
   //same as swapType
   this->setSwapType(t);
-  //set current sprite to 0
-  this->setSpriteCounter(0); //maybe dont do this... allow them to finish their rotation
-                             //max sprite to appropriate int
-                             //play around with everything have a maxSprite of 30
-  this->setMaxSprite(30);
-  // if (this->getType() == 4 or this->getType() == 5)
-  // {
-  //   this->setMaxSprite(30);
-  // }
-  // else
-  // {
-  //   this->setMaxSprite(60);
-  // }
+
   //visual loc to default
   this->setDstX(this->getDefaultSpriteX());
   this->setDstY(this->getDefaultSpriteY());
@@ -192,6 +200,10 @@ float Tile::getFallingSpeed()
 {
   return fallingSpeed;
 }
+float Tile::getFallingConst()
+{
+  return this->TILE_FALLING_SPEED;
+}
 
 int Tile::sign(int x)
 {
@@ -220,7 +232,7 @@ int Tile::sign(float x)
 
 bool Tile::isInMatchState()
 {
-  return this->state == STATE::MATCH;
+  return (this->state == STATE::MATCH);
 }
 
 //action functions
@@ -256,7 +268,8 @@ void Tile::takeFallingSprite(int type, int falls, float speed) //old
     this->setFalling(false, 0);
     this->setFallingSpeed((float)0);
     //check this Tile for a match
-    matchBoard[this->getRow()][this->getCol()] = true;
+    // matchBoard[this->getRow()][this->getCol()] = true;
+    this->state = STATE::MATCH;
   }
   else
   {
@@ -274,9 +287,9 @@ void Tile::update()
   switch (this->state)
   {
   case STATE::IDLE:
-    printf("my state is idle\n");
     this->setDstY(this->getDefaultSpriteY());
     this->setDstY(this->getDefaultSpriteY());
+    this->matchStatus = 0; //reset match status from a possible transition from STATE::MATCH
     if (this->getSpriteCounter() != 0)
     {
       //sprite not done spinning, finish the animation
@@ -285,8 +298,6 @@ void Tile::update()
     break;
 
   case STATE::SWAP:
-    printf("my state is swap\n");
-
     deltaX = deltaY = 0;
     this->setSpriteCounter((this->getSpriteCounter() + 1) % this->getMaxSprite());
     switch (this->getSwappingDirection())
@@ -310,72 +321,88 @@ void Tile::update()
     this->setDstX(this->getDstX() + deltaX);
     this->setDstY(this->getDstY() + deltaY);
 
-    if (this->getDstX() == (this->getDefaultSpriteX() + (sign(deltaX) * 50)) and
-        this->getDstY() == (this->getDefaultSpriteY() + (sign(deltaY) * 50)))
+    if (this->getDstX() == (this->getDefaultSpriteX() + (sign(deltaX) * this->GRID_SIZE)) and
+        this->getDstY() == (this->getDefaultSpriteY() + (sign(deltaY) * this->GRID_SIZE)))
     {
       //tell game to check me for match
       this->state = STATE::MATCH;
+      this->swapTypes(); //change type to swapType and swapType to type
+//reset visual coords
+    this->setDstX(getDefaultSpriteX());
+    this->setDstY(getDefaultSpriteY());
+      // this->setType(this->getSwapType());
       //swap my type right after texture is blitted to ensure the proper Tiles are drawn
     }
-
     break;
 
   case STATE::PAWS:
-    printf("my state is paws\n");
 
     deltaX = deltaY = 0;
-    this->setSpriteCounter((this->getSpriteCounter() + 1) % this->getMaxSprite());
+    this->matchStatus = 0;                                                         //reset match status from a possible transition from STATE::MATCH
+    this->setSpriteCounter((this->getSpriteCounter() + 1) % this->getMaxSprite()); //spin
+
     switch (this->getSwappingDirection())
     { //decide which direction to move
     case 1:
-      deltaX = -TILE_SWAPPING_SPEED;
-      break;
-    case 2:
       deltaX = TILE_SWAPPING_SPEED;
       break;
+    case 2:
+      deltaX = -TILE_SWAPPING_SPEED;
+      break;
     case 3:
-      deltaY = -TILE_SWAPPING_SPEED;
+      deltaY = TILE_SWAPPING_SPEED;
       break;
     case 4:
-      deltaY = TILE_SWAPPING_SPEED;
+      deltaY = -TILE_SWAPPING_SPEED;
       break;
     default:
       printf("Swap direction of Tile at row %d col %d was %d\n\n", this->getRow(), this->getCol(), this->getSwappingDirection());
       exit(-1);
     }
-    this->setDstX(this->getDstX() + deltaX);
-    this->setDstY(this->getDstY() + deltaY);
+    this->setDstX(this->getDstX() - deltaX);
+    this->setDstY(this->getDstY() - deltaY);
+      
+    if (this->getDstX() == (this->getDefaultSpriteX() - (sign(deltaX) * this->GRID_SIZE)) and
+        this->getDstY() == (this->getDefaultSpriteY() - (sign(deltaY) * this->GRID_SIZE)))
+    { 
+/*
+    if (this->getDstX() == this->getDefaultSpriteX() and
+        this->getDstY() == this->getDefaultSpriteY())
+    { */
 
-    if (this->getDstX() == (this->getDefaultSpriteX() + (sign(deltaX) * 50)) and
-        this->getDstY() == (this->getDefaultSpriteY() + (sign(deltaY) * 50)))
-    {
       //back to normal
-      this->state = STATE::IDLE;
-      //swap my type right after texture is blitted to ensure the proper Tiles are drawn
+      this->state = STATE::IDLE; //resets visual coords
+      //sprites are visually back to normal, take my original type back
+      this->setType(this->getSwapType());
     }
-
     break;
 
   case STATE::ACTIVE:
-    printf("my state is active\n");
+    //ensure default coords
+    this->setDstY(this->getDefaultSpriteY());
+    this->setDstY(this->getDefaultSpriteY());
+    //spin
     this->setSpriteCounter(
         (this->getSpriteCounter() + 1) % this->getMaxSprite());
-
     break;
 
   case STATE::EMPTY:
-    printf("my state is empty\n");
     //ensure the empty sprite - OR - dont put them on renderer
     this->setType(-1);
+    this->matchStatus = 0; //reset match status from a possible transition from STATE::MATCH
     break;
 
   case STATE::FALL:
-    printf("my state is fall\n");
-
+    printf("tile row: %d col: %d is falling\n", this->getRow(), this->getCol());
     //sprite is falling, inc visual Y pos
     this->setDstY(this->getDstY() + this->getFallingSpeed());
     //be sure that each falling sprite is at 0
-    this->setSpriteCounter(0);
+    // this->setSpriteCounter(0);
+    if (this->getSpriteCounter() != 0)
+    {
+      //sprite not done spinning, finish the animation
+      this->setSpriteCounter((this->getSpriteCounter() + 1) % this->getMaxSprite());
+    }
 
     if (this->getDstY() >= (this->getDefaultSpriteY() + 50))
     {
@@ -389,7 +416,7 @@ void Tile::update()
     break;
 
   case STATE::MATCH: //shouldnt even get here - Game should change it before update gets called again
-    printf("my state is match\n");
+    // printf("my state is match\n");
     break;
 
   default:
@@ -414,18 +441,23 @@ void Tile::update()
     //tile is visible
     SDL_RenderCopy(renderer, gems[this->getType()], &src, &dst);
   }
+/*
   if (this->state == STATE::MATCH or this->state == STATE::IDLE)
   {
     //done falling or swapping or swapping back
     //udpate type just to be safe - swaps needs it
     this->setType(this->getSwapType());
+    // this->setSpriteCounter(...);//set my sprite counter to the value of my swapee's sprite counter
   }
+*/
 }
 
 int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
 { //fall
+  printf("change state called... the one just for fall\n");
   if (newState == "fall")
   {
+    printf("\trow: %d and col: %d - changed to state FALL\n", this->getRow(), this->getCol());
     /*
     arg2 - type
     arg3 - my fallsRemaining
@@ -453,6 +485,7 @@ int Tile::changeState(const char *newState, int arg2)
 { //swap
   if (newState == "swap")
   {
+    printf("\trow: %d and col: %d - changed to state SWAP\n", this->getRow(), this->getCol());
     /* arg2 is new direction
 	     1 - go left
 	     2 - go right
@@ -462,6 +495,9 @@ int Tile::changeState(const char *newState, int arg2)
     printf("state changed to swap\n");
     this->state = STATE::SWAP;
     this->swappingDirection = arg2;
+
+    // return 0;
+
     switch (arg2)
     { //what is my new type once I swap?
     case 1:
@@ -485,6 +521,11 @@ int Tile::changeState(const char *newState, int arg2)
       exit(-1);
     }
   }
+  else
+  {
+    printf("\nTile::changeState('', int) did not receive expected arg\n\tnewState: %s\n\targ2: %d\n\n", newState, arg2);
+    exit(-1);
+  }
 }
 
 int Tile::changeState(const char *newState)
@@ -492,40 +533,47 @@ int Tile::changeState(const char *newState)
 
   if (newState == "idle")
   {
-    printf("state changed to idle\n");
+    printf("\trow: %d and col: %d - changed to state IDLE\n", this->getRow(), this->getCol());
     this->state = STATE::IDLE;
+//reset my visual coords
+    this->setDstX(this->getDefaultSpriteX());
+    this->setDstY(this->getDefaultSpriteY());
   }
   else if (newState == "active")
   {
-    printf("state changed to active\n");
+    printf("\trow: %d and col: %d - changed to state ACTIVE\n", this->getRow(), this->getCol());
     this->state = STATE::ACTIVE;
   }
   else if (newState == "empty")
   {
-    printf("state changed to empty\n");
+    //TELL EVERY TILE ABOVE TO FALL
+    printf("\trow: %d and col: %d - changed to state EMPTY\n", this->getRow(), this->getCol());
     this->state = STATE::EMPTY;
+    this->setType(-1);//update type and swapType to -1 - empty
   }
   else if (newState == "paws")
   {
-    printf("state changed to paws\n");
+    printf("\trow: %d and col: %d - changed to state PAWS\n", this->getRow(), this->getCol());
     this->state = STATE::PAWS;
+
+    return 0;
 
     switch (this->getSwappingDirection())
     { // reverse swapping direction and set new swapType
     case 1:
-      this->setSwappingDirection(2);
+      // this->setSwappingDirection(2);
       this->setSwapType(board[this->row][this->col + 1].getType());
       break;
     case 2:
-      this->setSwappingDirection(1);
+      // this->setSwappingDirection(1);
       this->setSwapType(board[this->row][this->col - 1].getType());
       break;
     case 3:
-      this->setSwappingDirection(4);
+      // this->setSwappingDirection(4);
       this->setSwapType(board[this->row + 1][this->col].getType());
       break;
     case 4:
-      this->setSwappingDirection(3);
+      // this->setSwappingDirection(3);
       this->setSwapType(board[this->row - 1][this->col].getType());
       break;
     default:
@@ -533,6 +581,11 @@ int Tile::changeState(const char *newState)
       exit(-1);
     } //end switch(swappingDirection)
   }   //end else if newState == "paws"
+  else
+  {
+    printf("\nTile::changeState('') did not receive expected arg\n\tnewState: %s\n\n", newState);
+    exit(-1);
+  }
 }
 
 /* research more on overloading 
