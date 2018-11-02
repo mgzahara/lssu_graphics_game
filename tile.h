@@ -27,12 +27,18 @@ class Tile
 	float spriteDstX;
 	float spriteDstY;
 
+	bool shouldBeEmpty;
+	bool keepFalling;
+	
 	int matchStatus;
 	void setMatchStatus(int);
 	int getMatchStatus();
-	void swapTypes();
-	bool isFalling();
+	void swapTypes();	
+	int getRandType();
+	bool emptyBelowMe();
+	void spriteHandOff(int, int);
 
+	void printColor(int);
 	//consts
 	int GRID_SIZE;
 	int GEM_SIZE;
@@ -117,7 +123,12 @@ class Tile
 	int changeState(const char *, int, int, int);
 	int changeState(const char *, int);
 	int changeState(const char *);
-	//
+	//state checkers
 	bool isInMatchState();
+	bool isInFallingState();
+	bool isInEmptyState();
+	bool isInIdleState();
+
+	
 };
 #endif

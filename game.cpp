@@ -20,6 +20,9 @@ Game::~Game()
 
 bool Game::validLeftMouseClick(int mouse_x, int mouse_y)
 {
+  //include in here a check for all Tiles to be idle
+  //dont allow swaps while other things are going on
+  
   return (mouse_x > 0) and (mouse_y > 0) and
     ((mouse_x % GRID_SIZE) > BOX_SIZE) and
     ((mouse_x % GRID_SIZE) < (GRID_SIZE - BOX_SIZE)) and
@@ -155,6 +158,12 @@ void Game::updateBoard()
 
   static int lower = 0;
   static int upper = 5;  
+
+  //update all Tile above board
+  for(int i = 7; i >= 0; i--)
+    {
+      aboveBoard[i].update();
+    }
   
   //update all Tiles - go backwards to facilitate falling Tile sprite hand off
   for (int i = 7; i >= 0; i--)
@@ -165,17 +174,6 @@ void Game::updateBoard()
 	}
     }
 
-  //update all Tile above board
-  for(int i = 7; i >= 0; i--)
-    {
-      if(aboveBoard[i].isFalling() and aboveBoard[i].getType() == -1)
-	{
-	  //above board Tile is 'falling' but type is -1 (done falling)
-	  aboveBoard[i].changeState("idle");
-	  aboveBoard[i].setType((rand() % (upper - lower + 1)) + lower);
-	}
-      aboveBoard[i].update();
-    }
 }
 
 void Game::checkForMatches()
@@ -510,7 +508,7 @@ void Game::match(Tile curr)
   if ((left + right) >= 2)
     { //is left-right the match?
 
-      //tell every Tile above match that it should fall
+      /*      //tell every Tile above match that it should fall
       for (int row = (curr.getRow() - 1); row >= 0; row--)
 	{ //start right above this match, go up
 	  for (int col = (curr.getCol() - refLeft); col <= (curr.getCol() + refRight); col++)
@@ -530,7 +528,7 @@ void Game::match(Tile curr)
 				      1,                                  // fall 1
 				      aboveBoard[col].getFallingConst()); // regular speed
 	}
-      
+      */
 
       //set all matching Tiles to invisible
       while (left > 0)
@@ -548,7 +546,7 @@ void Game::match(Tile curr)
   if ((above + below) >= 2)
     { // is above-below the match?
 
-      //tell every Tile above match that it should fall
+      /*      //tell every Tile above match that it should fall
       for (int row = (curr.getRow() - refAbove - 1); row >= 0; row--)
 	{
 	  printf("\nGame:: telling tile (row: %d col: %d) to fall\n", row, curr.getCol());
@@ -559,12 +557,12 @@ void Game::match(Tile curr)
 	}
 
 
-      //tell all aboveBoard Tiles to fall
+	//tell all aboveBoard Tiles to fall
       aboveBoard[curr.getCol()].changeState("fall",
 					    aboveBoard[curr.getCol()].getType(),
 					    refAbove + refBelow + 1,
 					    aboveBoard[curr.getCol()].getFallingConst() * (refAbove + refBelow + 1));
-      
+      */      
       //set all matching Tiles to invisible
       while (above > 0)
 	{ //remove all above

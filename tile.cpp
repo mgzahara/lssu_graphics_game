@@ -18,14 +18,18 @@ Tile::Tile()
   GRID_SIZE = 50;
   GEM_SIZE = 32;
   BOX_SIZE = 3;
+  //TILE_FALLING_SPEED = 10.0;
+  //TILE_SWAPPING_SPEED = 10.0;
+  TILE_SWAPPING_SPEED = 2.5;
   TILE_FALLING_SPEED = 2.5;
-  TILE_SWAPPING_SPEED = 5.0;
-  //  TILE_SWAPPING_SPEED = 5.012;
+  //  TILE_SWAPPING_SPEED = 2.5;
 
   state = STATE::IDLE;
 
   this->setMaxSprite(30);
-
+  //toggle to allow tiles to finish 'falling' after bottom place is filled
+  this->keepFalling = false;
+  this->shouldBeEmpty = false;
   this->matchStatus = 0;
 
   // falling = false;
@@ -51,10 +55,15 @@ int Tile::getMatchStatus()
 {
   return this->matchStatus;
 }
-bool Tile::isFalling()
+int Tile::getRandType()
 {
-  return (this->state == STATE::FALL);
+  //get random type for aboveBoard[]
+  int lower = 0;
+  int upper = 5;
+  return ((rand() % (upper - lower + 1)) + lower);
 }
+
+
 //setters
 void Tile::setRow(int r)
 {
@@ -200,10 +209,6 @@ float Tile::getDefaultSpriteY()
 {
   return ((this->getRow() * GRID_SIZE) + BOX_SIZE + 6);
 }
-float Tile::getFallingSpeed()
-{
-  return fallingSpeed;
-}
 float Tile::getFallingConst()
 {
   return this->TILE_FALLING_SPEED;
@@ -234,30 +239,6 @@ int Tile::sign(float x)
   return 0;
 }
 
-bool Tile::isInMatchState()
-{
-  return (this->state == STATE::MATCH);
-}
-
-//action functions
-
-bool Tile::isAdjacent(Tile t)
-{
-  //true -> this Tile and arg Tile are vertically or horizontally adjacent
-
-  if ((abs(row - t.getRow()) == 1 and
-       abs(col - t.getCol()) == 0) //directly above/below
-      or
-      (abs(col - t.getCol()) == 1 and
-       abs(row - t.getRow()) == 0)) //directly left/right
-
-    { //only true if directly left, right, up, or down
-      return true;
-    }
-
-  return false;
-}
-
 void Tile::takeFallingSprite(int type, int falls, float speed) //old
 {
 
@@ -283,6 +264,162 @@ void Tile::takeFallingSprite(int type, int falls, float speed) //old
   this->setDstY(this->getDefaultSpriteY());
 }
 
+bool Tile::isAdjacent(Tile t)
+{
+  //true -> this Tile and arg Tile are vertically or horizontally adjacent
+
+  if ((abs(row - t.getRow()) == 1 and
+       abs(col - t.getCol()) == 0) //directly above/below
+      or
+      (abs(col - t.getCol()) == 1 and
+       abs(row - t.getRow()) == 0)) //directly left/right
+
+    { //only true if directly left, right, up, or down
+      return true;
+    }
+
+  return false;
+}
+
+
+bool Tile::isInMatchState()
+{
+  return (this->state == STATE::MATCH);
+}
+bool Tile::isInFallingState()
+{
+  return (this->state == STATE::FALL);
+}
+bool Tile::isInEmptyState()
+{
+  return (this->state == STATE::EMPTY);
+}
+bool Tile::isInIdleState()
+{
+  return (this->state == STATE::IDLE);
+}
+void Tile::printColor(int newType)
+{
+  //  printf("top of printColor, this->type: %d\n", this->type);
+  switch(newType)
+    {
+    case 0: 
+	printf("red");
+      break;
+    case 1: 
+	printf("yellow");
+      break;
+    case 2: 
+	printf("pink");
+      break;
+    case 3: 
+	printf("green");
+      break;
+    case 4: 
+	printf("white");
+      break;
+    case 5: 
+	printf("blue");
+      break;
+    default:
+      printf("printColor() type not found\n");
+      exit(-1);
+    }
+}
+bool Tile::emptyBelowMe()
+{
+  bool flag = false;
+  for(int i = this->row; i <= 6; i++)
+    {
+      if(board[i + 1][this->col].isInEmptyState())
+	{
+	  //found an empty Tile below my position
+	  flag = true;
+	  //this->keepFalling = true;
+	}
+    }
+  /*
+  if(flag and this->keepFalling)
+    {
+      //empty found - real true
+      return true;
+    }
+  else if(this->keepFalling)
+    {
+      //no empty found - fake true
+      this->keepFalling = false;
+      return true;
+    }
+  else
+    {
+      //no empty found and toggle is off - real false
+      return false;
+    }
+  */
+  return flag;
+
+}
+float Tile::getFallingSpeed()
+{
+  int emptyTiles = 0;
+  for(int i = this->row; i <= 6; i++)
+    {
+      if(board[i + 1][this->col].isInEmptyState())
+	{
+	  //found an empty Tile below my position
+	  emptyTiles = emptyTiles + 1;
+	}
+    }
+  /*
+  if(this->emptyBelowMe() and this->keepFalling)
+    {
+      //emptyTiles is accurate
+      return this->TILE_FALLING_SPEED * (float) emptyTiles;    
+    }
+  else if (this->keepFalling)
+    {
+      //emptyTiles is inaccurate
+      return this->TILE_FALLING_SPEED * ((float) emptyTiles + 1.0);
+    }
+  else
+    {
+      return (float) 0.0;
+    }
+  */
+  return this->TILE_FALLING_SPEED * (float) emptyTiles;
+}
+
+//action functions
+
+void Tile::spriteHandOff(int newType, int newSpriteCounter)
+{
+  //accept new sprite
+  printf("spriteHandOff() to Tile (row: %d col: %d)\n", this->row, this->col);
+  printf("\treceived a Tile of type %d and color: ", newType);
+  //  fflush(stdout);
+  printColor(newType);
+  printf("\n\n");
+
+  //when this function is called, I am empty
+  //if there is no other empty Tile below me, call for a match
+  
+  
+  this->setType(newType); // will reset visual pos
+  this->setSpriteCounter(newSpriteCounter);
+
+  if(!this->emptyBelowMe())
+    {
+      //no empty Tiles below me, check me for a match
+      this->state = STATE::MATCH;
+    }
+  else
+    {
+      //there are still empty Tiles below me, keep on
+      this->changeState("idle");
+    }
+}
+
+
 void Tile::update()
 {
   SDL_Rect src, dst;
@@ -291,14 +428,50 @@ void Tile::update()
   switch (this->state)
     {
     case STATE::IDLE:
-      this->setDstY(this->getDefaultSpriteY());
-      this->setDstY(this->getDefaultSpriteY());
+      //      this->setDstY(this->getDefaultSpriteY());
+      //      this->setDstY(this->getDefaultSpriteY());
       this->matchStatus = 0; //reset match status from a possible transition from STATE::MATCH
       if (this->getSpriteCounter() != 0)
 	{
 	  //sprite not done spinning, finish the animation
 	  this->setSpriteCounter((this->getSpriteCounter() + 1) % this->getMaxSprite());
 	}
+
+      if(this->emptyBelowMe())
+	{
+	  //there is an empty Tile below me - fall
+
+	  //inc visual Y pos
+	  this->setDstY(this->getDstY() + this->getFallingSpeed());
+
+	  if (this->getDstY() >= (this->getDefaultSpriteY() + this->GRID_SIZE))
+	    {
+	      //my visual is in place for the next Tile to take it
+
+	      //hand off my info
+	      printf("before calling psriteHandOff()\n\tthis->type: %d\n\tthis->spriteCounter: %d\n\n",
+		     this->type, this->spriteCounter);
+	      board[this->row + 1][this->col].spriteHandOff(this->type, this->spriteCounter);
+
+	      
+	      if(this->row == -1)
+		{
+		  //this Tile is aboveBoard
+
+		  //get new type - will reset visuals
+		  this->setType(this->getRandType());
+		}
+	      else
+		{
+		  //I am a board Tile
+		  //set flag to make me empty right after rendering
+		  //I am the new bottom of the col
+		  this->shouldBeEmpty = true;
+		}
+	    }
+	}//end of if emptyBelowMe
+      
+
       break;
 
     case STATE::SWAP:
@@ -337,6 +510,8 @@ void Tile::update()
 	  // this->setType(this->getSwapType());
 	  //swap my type right after texture is blitted to ensure the proper Tiles are drawn
 	}
+
+
       break;
 
     case STATE::PAWS:
@@ -379,6 +554,8 @@ void Tile::update()
 	  //sprites are visually back to normal, take my original type back
 	  this->setType(this->getSwapType());
 	}
+
+
       break;
 
     case STATE::ACTIVE:
@@ -398,8 +575,6 @@ void Tile::update()
 
     case STATE::FALL:
       printf("tile (row: %d col: %d) is in FALL\n", this->row, this->col);
-      //sprite is falling, inc visual Y pos
-      this->setDstY(this->getDstY() + this->getFallingSpeed());
       //be sure that each falling sprite is at 0
       // this->setSpriteCounter(0);
       if (this->getSpriteCounter() != 0)
@@ -410,19 +585,24 @@ void Tile::update()
 
       if (this->getDstY() >= (this->getDefaultSpriteY() + this->GRID_SIZE))
 	{
-	  //texture visual is in place to be taken by next tile
+	  //my visual is in place for the next Tile to take it
+
+	  //hand off my texture to the Tile below me
 	  board[this->getRow() + 1][this->getCol()]
 	    .changeState("fall",
 			 this->getType(),
 			 this->getFallsRemaining() - 1,
 			 this->getFallingSpeed());
-
-	  //I have fallen all the way, set my type to -1
-	  //this only lasts until the tile above me tells me to take its falling tile
-	  //UNLESS: I am the top tile (aboveBoard[])
-	  //the -1 type will tell Game to give me a new type
-	  this->setType(-1);
-	}
+	  if(this->getRow() == -1)
+	    {
+	      //only for aboveBoard Tiles - reset myself
+	      //drop another, or reset to idle
+	      aboveBoard[this->getCol()].changeState("fall",
+						     this->getRandType(),
+						     this->getFallsRemaining() - 1,
+						     this->getFallingSpeed());
+	    }//end of if row == -1
+	}//end of if dstY == defaultDstY + GRID_SIZE
       break;
 
     case STATE::MATCH: //shouldnt even get here - Game should change it before update gets called again
@@ -451,15 +631,12 @@ void Tile::update()
       //tile is visible
       SDL_RenderCopy(renderer, gems[this->getType()], &src, &dst);
     }
-  /*
-    if (this->state == STATE::MATCH or this->state == STATE::IDLE)
+
+  if(this->shouldBeEmpty)
     {
-    //done falling or swapping or swapping back
-    //udpate type just to be safe - swaps needs it
-    this->setType(this->getSwapType());
-    // this->setSpriteCounter(...);//set my sprite counter to the value of my swapee's sprite counter
+      this->shouldBeEmpty = false;
+      this->changeState("empty");
     }
-  */
 }
 
 int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
@@ -486,7 +663,7 @@ int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
 	{
 	  //im still falling
 	  this->state = STATE::FALL;
-	  this->setFallsRemaining(arg3);
+	  this->setFallsRemaining(this->getFallsRemaining() + arg3);
 	  this->setFallingSpeed(arg4);
 	}
     }

@@ -72,7 +72,7 @@ int main(int argc, char **args)
     //reset mouse position
     mouse_x = mouse_y = -1;
 
-    SDL_Delay(200);
+    SDL_Delay(20);
   }
 
   return 0;
