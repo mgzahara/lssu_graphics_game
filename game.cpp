@@ -21,20 +21,20 @@ Game::~Game()
 bool Game::validLeftMouseClick(int mouse_x, int mouse_y)
 {
   return (mouse_x > 0) and (mouse_y > 0) and
-         ((mouse_x % GRID_SIZE) > BOX_SIZE) and
-         ((mouse_x % GRID_SIZE) < (GRID_SIZE - BOX_SIZE)) and
-         ((mouse_y % GRID_SIZE) > BOX_SIZE) and
-         ((mouse_y % GRID_SIZE) < (GRID_SIZE - BOX_SIZE)) and
-         (mouse_x < (BOARD_SIZE * GRID_SIZE)) and
-         (mouse_y < (BOARD_SIZE * GRID_SIZE));
+    ((mouse_x % GRID_SIZE) > BOX_SIZE) and
+    ((mouse_x % GRID_SIZE) < (GRID_SIZE - BOX_SIZE)) and
+    ((mouse_y % GRID_SIZE) > BOX_SIZE) and
+    ((mouse_y % GRID_SIZE) < (GRID_SIZE - BOX_SIZE)) and
+    (mouse_x < (BOARD_SIZE * GRID_SIZE)) and
+    (mouse_y < (BOARD_SIZE * GRID_SIZE));
 }
 
 bool Game::shouldSwapTiles(int clickRow, int clickCol)
 {
   return (activeTile.getRow() >= 0) and
-         (activeTile.getCol() >= 0) and
-         (board[activeTile.getRow()][activeTile.getCol()]
-              .isAdjacent(board[clickRow][clickCol]));
+    (activeTile.getCol() >= 0) and
+    (board[activeTile.getRow()][activeTile.getCol()]
+     .isAdjacent(board[clickRow][clickCol]));
 }
 
 void Game::drawHighlightBox()
@@ -79,63 +79,63 @@ void Game::startBoard()
   int upper = 5;
 
   for (int i = 0; i < BOARD_SIZE; i++)
-  { //row
-    for (int j = 0; j < BOARD_SIZE; j++)
-    { //col
+    { //row
+      for (int j = 0; j < BOARD_SIZE; j++)
+	{ //col
 
-      //set matchBoard[][] defaults while we're here
-      // matchBoard[i][j] = false;
+	  //set matchBoard[][] defaults while we're here
+	  // matchBoard[i][j] = false;
 
-      //set up Tiles
-      board[i][j].setRow(i);
-      board[i][j].setCol(j);
-      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-      board[i][j].setDstX((float)(j * GRID_SIZE + BOX_SIZE + 6));
-      board[i][j].setDstY((float)(i * GRID_SIZE + BOX_SIZE + 6));
+	  //set up Tiles
+	  board[i][j].setRow(i);
+	  board[i][j].setCol(j);
+	  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+	  board[i][j].setDstX((float)(j * GRID_SIZE + BOX_SIZE + 6));
+	  board[i][j].setDstY((float)(i * GRID_SIZE + BOX_SIZE + 6));
 
-      if (i >= 2)
-      { //on/past row 2, check 2 above for matching type
-        bool aboveMatch = false;
-        bool leftMatch = false;
-        if (board[i - 1][j].getType() == board[i - 2][j].getType())
-        {
-          aboveMatch = true;
-        }
-        if (j >= 2)
-        { //on/past col 2, check 2 to the left for matching type
-          if (board[i][j - 1].getType() == board[i][j - 2].getType())
-          {
-            leftMatch = true;
-          }
-        }
-        //if above or left have matches AND current type matches either one
-        // randomize until it doesnt
-        while ((aboveMatch or leftMatch) and
-               (board[i][j].getType() == board[i - 1][j].getType() or
-                board[i][j].getType() == board[i][j - 1].getType()))
-        { //pick a new type while it makes a match with above or left
-          board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-        }
-      } //end if i >= 2
-      else
-      {
-        if (j >= 2)
-        { //on/past col 2, check 2 to the left for matching type
-          bool leftMatch = false;
-          if (board[i][j - 1].getType() == board[i][j - 2].getType())
-          {
-            leftMatch = true;
-          }
+	  if (i >= 2)
+	    { //on/past row 2, check 2 above for matching type
+	      bool aboveMatch = false;
+	      bool leftMatch = false;
+	      if (board[i - 1][j].getType() == board[i - 2][j].getType())
+		{
+		  aboveMatch = true;
+		}
+	      if (j >= 2)
+		{ //on/past col 2, check 2 to the left for matching type
+		  if (board[i][j - 1].getType() == board[i][j - 2].getType())
+		    {
+		      leftMatch = true;
+		    }
+		}
+	      //if above or left have matches AND current type matches either one
+	      // randomize until it doesnt
+	      while ((aboveMatch or leftMatch) and
+		     (board[i][j].getType() == board[i - 1][j].getType() or
+		      board[i][j].getType() == board[i][j - 1].getType()))
+		{ //pick a new type while it makes a match with above or left
+		  board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		}
+	    } //end if i >= 2
+	  else
+	    {
+	      if (j >= 2)
+		{ //on/past col 2, check 2 to the left for matching type
+		  bool leftMatch = false;
+		  if (board[i][j - 1].getType() == board[i][j - 2].getType())
+		    {
+		      leftMatch = true;
+		    }
 
-          while (leftMatch and
-                 board[i][j].getType() == board[i][j - 1].getType())
-          { //pick a new type while it makes a match with left
-            board[i][j].setType((rand() % (upper - lower + 1)) + lower);
-          }
-        } //end if j >= 2
-      }   //end else
-    }     //end inner for loop
-  }       //end outer for loop
+		  while (leftMatch and
+			 board[i][j].getType() == board[i][j - 1].getType())
+		    { //pick a new type while it makes a match with left
+		      board[i][j].setType((rand() % (upper - lower + 1)) + lower);
+		    }
+		} //end if j >= 2
+	    }   //end else
+	}     //end inner for loop
+    }       //end outer for loop
 }
 
 //new
@@ -145,27 +145,27 @@ void Game::updateBoard()
   // printf("new board update\n----------------\n");
   //update all Tiles - go backwards to facilitate falling Tile sprite hand off
   for (int i = 7; i >= 0; i--)
-  {
-    for (int j = 7; j >= 0; j--)
     {
-      board[i][j].update();
+      for (int j = 7; j >= 0; j--)
+	{
+	  board[i][j].update();
+	}
     }
-  }
 }
 
 void Game::checkForMatches()
 {
   //handle any matches
   for (int i = 0; i < 8; i++)
-  {
-    for (int j = 0; j < 8; j++)
     {
-      if (board[i][j].isInMatchState())
-      {
-        match(board[i][j]);
-      }
+      for (int j = 0; j < 8; j++)
+	{
+	  if (board[i][j].isInMatchState())
+	    {
+	      match(board[i][j]);
+	    }
+	}
     }
-  }
 }
 
 //troublesome
@@ -191,31 +191,31 @@ char *Game::matchCheck(Tile currTile)
   //currTile is board[row][col]
 
   while (col > 0 and board[row][col - 1].getType() == type)
-  { //while left matches
-    leftMatches++;
-    col--;
-  }
+    { //while left matches
+      leftMatches++;
+      col--;
+    }
   col = currTile.getCol();
 
   while (col < BOARD_SIZE - 1 and board[row][col + 1].getType() == type)
-  { //while right matches
-    rightMatches++;
-    col++;
-  }
+    { //while right matches
+      rightMatches++;
+      col++;
+    }
   col = currTile.getCol();
 
   while (row > 0 and board[row - 1][col].getType() == type)
-  { //while above matches
-    aboveMatches++;
-    row--;
-  }
+    { //while above matches
+      aboveMatches++;
+      row--;
+    }
   row = currTile.getRow();
 
   while (row < BOARD_SIZE - 1 and board[row + 1][col].getType() == type)
-  { //while below matches
-    belowMatches++;
-    row++;
-  }
+    { //while below matches
+      belowMatches++;
+      row++;
+    }
   row = currTile.getRow();
 
   //put together return string
@@ -249,15 +249,15 @@ void Game::drawBoard()
   //draw a grid in maroon
   SDL_SetRenderDrawColor(renderer, 128, 0, 0, 255);
   for (int i = 1; i <= (WINDOW_WIDTH / GRID_SIZE); i++)
-  {
-    //draw vertical lines
-    SDL_RenderDrawLine(renderer, i * GRID_SIZE, 0, i * GRID_SIZE, WINDOW_HEIGHT);
-  }
+    {
+      //draw vertical lines
+      SDL_RenderDrawLine(renderer, i * GRID_SIZE, 0, i * GRID_SIZE, WINDOW_HEIGHT);
+    }
   for (int i = 1; i <= (WINDOW_HEIGHT / GRID_SIZE); i++)
-  {
-    //draw horizontal lines
-    SDL_RenderDrawLine(renderer, 0, i * GRID_SIZE, WINDOW_WIDTH, i * GRID_SIZE);
-  }
+    {
+      //draw horizontal lines
+      SDL_RenderDrawLine(renderer, 0, i * GRID_SIZE, WINDOW_WIDTH, i * GRID_SIZE);
+    }
 }
 
 void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
@@ -265,99 +265,99 @@ void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
   // printf("handleLeftMouseClick() \n");
 
   if (validLeftMouseClick(mouse_x, mouse_y))
-  {
-    //click was made within constraints
-    int clickRow = mouse_y / GRID_SIZE;
-    int clickCol = mouse_x / GRID_SIZE;
-
-    if (shouldSwapTiles(clickRow, clickCol))
     {
-      printf("a swap has occurred\n");
-      //swap - tell tiles they are to move
-      int activeTileDir = 0, newClickDir = 0;
+      //click was made within constraints
+      int clickRow = mouse_y / GRID_SIZE;
+      int clickCol = mouse_x / GRID_SIZE;
 
-      //get highlight box out of the way
-      box_x = box_y = -200;
+      if (shouldSwapTiles(clickRow, clickCol))
+	{
+	  printf("a swap has occurred\n");
+	  //swap - tell tiles they are to move
+	  int activeTileDir = 0, newClickDir = 0;
 
-      //  directions
-      //  0 - ignore it
-      //  1 - go left
-      //  2 - go right
-      //  3 - go up
-      //  4 - go down
+	  //get highlight box out of the way
+	  box_x = box_y = -200;
 
-      //decide which direction each Tile goes
-      if (activeTile.getRow() == clickRow)
-      {
-        //swap in same row, left/right
-        if (activeTile.getCol() > clickCol)
-        {
-          //activeTile col is larger - right of new click
-          activeTileDir = 1; //go left
-          newClickDir = 2;   //go right
-        }
-        else
-        {
-          //activeTile col is smaller - left of new click
-          activeTileDir = 2; //go right
-          newClickDir = 1;   //go left
-        }
-      } //end if activeTile row == clickRow
+	  //  directions
+	  //  0 - ignore it
+	  //  1 - go left
+	  //  2 - go right
+	  //  3 - go up
+	  //  4 - go down
+
+	  //decide which direction each Tile goes
+	  if (activeTile.getRow() == clickRow)
+	    {
+	      //swap in same row, left/right
+	      if (activeTile.getCol() > clickCol)
+		{
+		  //activeTile col is larger - right of new click
+		  activeTileDir = 1; //go left
+		  newClickDir = 2;   //go right
+		}
+	      else
+		{
+		  //activeTile col is smaller - left of new click
+		  activeTileDir = 2; //go right
+		  newClickDir = 1;   //go left
+		}
+	    } //end if activeTile row == clickRow
+	  else
+	    {
+	      //swap in same col, up/down
+	      if (activeTile.getRow() > clickRow)
+		{
+		  //activeTile row is larger - below new click
+		  activeTileDir = 3; //go up
+		  newClickDir = 4;   //go down
+		}
+	      else
+		{
+		  //activeTile row is smaller - above new click
+		  activeTileDir = 4; //go down
+		  newClickDir = 3;   //go up
+		}
+	    } //end if activeTile row == clickRow else
+
+	  //tell each Tile it is to swap, the direction, its new type after swapping
+	  board[activeTile.getRow()][activeTile.getCol()]
+	    .changeState("swap", activeTileDir);
+	  board[clickRow][clickCol]
+	    .changeState("swap", newClickDir);
+
+	  printf("activeTile was updated to out of bounds\n");
+	  //reset active tile location
+	  activeTile.setRow(-2);
+	  activeTile.setCol(-2);
+
+	} //end if should swap tiles
       else
-      {
-        //swap in same col, up/down
-        if (activeTile.getRow() > clickRow)
-        {
-          //activeTile row is larger - below new click
-          activeTileDir = 3; //go up
-          newClickDir = 4;   //go down
-        }
-        else
-        {
-          //activeTile row is smaller - above new click
-          activeTileDir = 4; //go down
-          newClickDir = 3;   //go up
-        }
-      } //end if activeTile row == clickRow else
+	{
+	  //click was not adjacent, reset activeTile to current click
+	  printf("activeTile was updated to this click\n");
+	  //tell activeTile it is not active
+	  if (activeTile.getRow() >= 0 and activeTile.getCol() >= 0)
+	    {
+	      board[activeTile.getRow()][activeTile.getCol()]
+		.changeState("idle");
+	    }
 
-      //tell each Tile it is to swap, the direction, its new type after swapping
-      board[activeTile.getRow()][activeTile.getCol()]
-          .changeState("swap", activeTileDir);
-      board[clickRow][clickCol]
-          .changeState("swap", newClickDir);
+	  //tell new active Tile it is active
+	  board[clickRow][clickCol]
+	    .changeState("active");
 
-      printf("activeTile was updated to out of bounds\n");
-      //reset active tile location
-      activeTile.setRow(-2);
-      activeTile.setCol(-2);
+	  //update reference Tile
+	  activeTile.setRow(clickRow);
+	  activeTile.setCol(clickCol);
+	  activeTile.setType(board[clickRow][clickCol].getType());
 
-    } //end if should swap tiles
-    else
-    {
-      //click was not adjacent, reset activeTile to current click
-      printf("activeTile was updated to this click\n");
-      //tell activeTile it is not active
-      if (activeTile.getRow() >= 0 and activeTile.getCol() >= 0)
-      {
-        board[activeTile.getRow()][activeTile.getCol()]
-            .changeState("idle");
-      }
+	  //set pixel coords for activeTile highlighting
+	  box_x = clickCol * GRID_SIZE;
+	  box_y = clickRow * GRID_SIZE;
 
-      //tell new active Tile it is active
-      board[clickRow][clickCol]
-          .changeState("active");
-
-      //update reference Tile
-      activeTile.setRow(clickRow);
-      activeTile.setCol(clickCol);
-      activeTile.setType(board[clickRow][clickCol].getType());
-
-      //set pixel coords for activeTile highlighting
-      box_x = clickCol * GRID_SIZE;
-      box_y = clickRow * GRID_SIZE;
-
-    } //end if should swap tiles else
-  }   //end if valid mouse click
+	} //end if should swap tiles else
+    }   //end if valid mouse click
 }
 
 void Game::match(Tile curr)
@@ -373,30 +373,30 @@ void Game::match(Tile curr)
   tileIsSwapping = (board[curr.getRow()][curr.getCol()].getSwappingDirection() != 0) ? true : false;
 
   if (tileIsSwapping)
-  { // tile is swapping, determine swapee coords up front
-    switch (board[curr.getRow()][curr.getCol()].getSwappingDirection())
-    {
-    case 1:
-      swapeeRow = curr.getRow();
-      swapeeCol = curr.getCol() - 1;
-      break;
-    case 2:
-      swapeeRow = curr.getRow();
-      swapeeCol = curr.getCol() + 1;
-      break;
-    case 3:
-      swapeeRow = curr.getRow() - 1;
-      swapeeCol = curr.getCol();
-      break;
-    case 4:
-      swapeeRow = curr.getRow() + 1;
-      swapeeCol = curr.getCol();
-      break;
-    default:
-      printf("match() direction of Tile at row %d col %d was %d\n\n", curr.getRow(), curr.getCol(), curr.getSwappingDirection());
-      exit(-1);
+    { // tile is swapping, determine swapee coords up front
+      switch (board[curr.getRow()][curr.getCol()].getSwappingDirection())
+	{
+	case 1:
+	  swapeeRow = curr.getRow();
+	  swapeeCol = curr.getCol() - 1;
+	  break;
+	case 2:
+	  swapeeRow = curr.getRow();
+	  swapeeCol = curr.getCol() + 1;
+	  break;
+	case 3:
+	  swapeeRow = curr.getRow() - 1;
+	  swapeeCol = curr.getCol();
+	  break;
+	case 4:
+	  swapeeRow = curr.getRow() + 1;
+	  swapeeCol = curr.getCol();
+	  break;
+	default:
+	  printf("match() direction of Tile at row %d col %d was %d\n\n", curr.getRow(), curr.getCol(), curr.getSwappingDirection());
+	  exit(-1);
+	}
     }
-  }
 
   matchString = matchCheck(board[curr.getRow()][curr.getCol()]);
   sscanf(matchString, "%d %d %d %d", &left, &right, &above, &below);
@@ -407,137 +407,133 @@ void Game::match(Tile curr)
   refBelow = below;
 
   if (((left + right) >= 2) or ((above + below) >= 2))
-  { //a match was made - update my match status and check my swapee's status
+    { //a match was made - update my match status and check my swapee's status
 
-    if (tileIsSwapping)
-    {
-      board[curr.getRow()][curr.getCol()].setMatchStatus(1); //mark that I have made a match
-      switch (board[swapeeRow][swapeeCol].getMatchStatus())
-      {
-      case 0: //swapee not checked yet
-        //do nothing
-        break;
+      if (tileIsSwapping)
+	{
+	  board[curr.getRow()][curr.getCol()].setMatchStatus(1); //mark that I have made a match
+	  switch (board[swapeeRow][swapeeCol].getMatchStatus())
+	    {
+	    case 0: //swapee not checked yet
+	      //do nothing
+	      break;
 
-      case 1: //swapee made a match - set both of us to empty
-        board[curr.getRow()][curr.getCol()].changeState("empty");
-        board[swapeeRow][swapeeCol].changeState("empty");
-        break;
+	    case 1: //swapee made a match - set both of us to empty
+	      board[curr.getRow()][curr.getCol()].changeState("empty");
+	      board[swapeeRow][swapeeCol].changeState("empty");
+	      break;
 
-      case 2: //swapee did NOT make a match - me empty, them idle
-        //update swapee swapType to their type - they are staying where they are
-        board[swapeeRow][swapeeCol].setSwapType(board[swapeeRow][swapeeCol].getType());
-        //tell them they are idle
-        board[swapeeRow][swapeeCol].changeState("idle");          //make sure this doesnt do anything with types
-        board[curr.getRow()][curr.getCol()].changeState("empty"); // change my state to empty
-        break;
+	    case 2: //swapee did NOT make a match - me empty, them idle
+	      //update swapee swapType to their type - they are staying where they are
+	      board[swapeeRow][swapeeCol].setSwapType(board[swapeeRow][swapeeCol].getType());
+	      //tell them they are idle
+	      board[swapeeRow][swapeeCol].changeState("idle");          //make sure this doesnt do anything with types
+	      board[curr.getRow()][curr.getCol()].changeState("empty"); // change my state to empty
+	      break;
 
-      default:
-        printf("match() swapee matchStatus Tile at row %d col %d was %d\n\n", curr.getRow(), curr.getCol(), curr.getSwappingDirection());
-        exit(-1);
-      }
-    }
-    else
-    {                                                           // this match check is being made on a falling tile - not a swapping one
-      board[curr.getRow()][curr.getCol()].changeState("empty"); // change my state to empty
-    }
-  } // end of of match made
+	    default:
+	      printf("match() swapee matchStatus Tile at row %d col %d was %d\n\n", curr.getRow(), curr.getCol(), curr.getSwappingDirection());
+	      exit(-1);
+	    }
+	}
+      else
+	{                                                           // this match check is being made on a falling tile - not a swapping one
+	  board[curr.getRow()][curr.getCol()].changeState("empty"); // change my state to empty
+	}
+    } // end of if match made
 
   if ((refAbove + refBelow) < 2 and (refLeft + refRight) < 2)
-  { // I was NOT matched
+    { // I was NOT matched
 
-    if (tileIsSwapping)
-    {
-      board[curr.getRow()][curr.getCol()].setMatchStatus(2); // I have NOT made a match
-      switch (board[swapeeRow][swapeeCol].getMatchStatus())
-      {
-      //decide states based on the matchStatus of my swapee
-      case 0: // swapee not checked yet
-        // do nothing
-        break;
+      if (tileIsSwapping)
+	{
+	  board[curr.getRow()][curr.getCol()].setMatchStatus(2); // I have NOT made a match
+	  switch (board[swapeeRow][swapeeCol].getMatchStatus())
+	    {
+	      //decide states based on the matchStatus of my swapee
+	    case 0: // swapee not checked yet
+	      // do nothing
+	      break;
 
-      case 1: // swapee made a match - me idle, them empty
-        //update my swapType to my type - I am staying where I am
-        board[curr.getRow()][curr.getCol()].setSwapType(board[swapeeRow][swapeeCol].getType());
-        board[curr.getRow()][curr.getCol()].changeState("idle"); // I am idle
-        board[swapeeRow][swapeeCol].changeState("empty");        // swapee is empty
-        break;
+	    case 1: // swapee made a match - me idle, them empty
+	      //update my swapType to my type - I am staying where I am
+	      board[curr.getRow()][curr.getCol()].setSwapType(board[swapeeRow][swapeeCol].getType());
+	      board[curr.getRow()][curr.getCol()].changeState("idle"); // I am idle
+	      board[swapeeRow][swapeeCol].changeState("empty");        // swapee is empty
+	      break;
 
-      case 2: // swapee did NOT make a match - both to paws
-        board[curr.getRow()][curr.getCol()].changeState("paws");
-        board[swapeeRow][swapeeCol].changeState("paws");
-        break;
+	    case 2: // swapee did NOT make a match - both to paws
+	      board[curr.getRow()][curr.getCol()].changeState("paws");
+	      board[swapeeRow][swapeeCol].changeState("paws");
+	      break;
 
-      default:
-        printf("match() no match direction of Tile at row %d col %d was %d\n\n", curr.getRow(), curr.getCol(), curr.getSwappingDirection());
-        exit(-1);
+	    default:
+	      printf("match() no match direction of Tile at row %d col %d was %d\n\n", curr.getRow(), curr.getCol(), curr.getSwappingDirection());
+	      exit(-1);
 
-      } //end of switch(curr.getSwappingDir())
-    }   // end of if tileIsSwapping
-    else
-    { // this match check is being made on a falling tile - not a swapping one
-      // falling - no match - go to idle
-      board[curr.getRow()][curr.getCol()].changeState("idle");
-    }
-  } //if no match made on this tile
+	    } //end of switch(curr.getSwappingDir())
+	}   // end of if tileIsSwapping
+      else
+	{ // this match check is being made on a falling tile - not a swapping one
+	  // this tile is falling - no match - go to idle
+	  board[curr.getRow()][curr.getCol()].changeState("idle");
+	}
+    } //if no match made on this tile
 
   //handle other tiles involved in the match
 
   if ((left + right) >= 2)
-  { //is left-right the match?
+    { //is left-right the match?
 
-    //take care of the easy one first
-    // board[curr.getRow()][curr.getCol()].changeState("empty");
+      //tell every Tile above match that it should fall
+      for (int row = (curr.getRow() - 1); row >= 0; row--)
+	{ //start right above this match, go up
+	  for (int col = (curr.getCol() - refLeft); col <= (curr.getCol() + refRight); col++)
+	    {
+	      printf("\nGame:: telling tile (row: %d col: %d) to fall\n", row, col);
+	      board[row][col].changeState("fall",                             // new state
+					  board[row][col].getType(),          // keep type
+					  1,                                  // fall 1
+					  board[row][col].getFallingConst()); // regular speed
+	    }
+	}
 
-    //tell every Tile above match that it should fall
-    for (int row = (curr.getRow() - 1); row <= 0; row--)
-    { //start right above this match, go up
-      for (int col = (curr.getCol() - left); col <= (curr.getCol() + right); col++)
-      {
-        board[row][col].changeState("fall",                             // new state
-                                    board[row][col].getType(),          // keep type
-                                    1,                                  // fall 1
-                                    board[row][col].getFallingConst()); // regular speed
-      }
-    }
-
-    //set all matching Tiles to invisible
-    while (left > 0)
-    { //remove all left
-      board[curr.getRow()][curr.getCol() - left].changeState("empty");
-      left--;
-    }
-    while (right > 0)
-    { //remove all right
-      board[curr.getRow()][curr.getCol() + right].changeState("empty");
-      right--;
-    }
-  } //end if left + right >= 2
+      //set all matching Tiles to invisible
+      while (left > 0)
+	{ //remove all left
+	  board[curr.getRow()][curr.getCol() - left].changeState("empty");
+	  left--;
+	}
+      while (right > 0)
+	{ //remove all right
+	  board[curr.getRow()][curr.getCol() + right].changeState("empty");
+	  right--;
+	}
+    } //end if left + right >= 2
 
   if ((above + below) >= 2)
-  { // is above-below the match?
+    { // is above-below the match?
 
-    //take care of the easy one first
-    // board[curr.getRow()][curr.getCol()].changeState("empty");
+      //tell every Tile above match that it should fall
+      for (int row = (curr.getRow() - refAbove - 1); row >= 0; row--)
+	{
+	  printf("\nGame:: telling tile (row: %d col: %d) to fall\n", row, curr.getCol());
+	  board[row][curr.getCol()].changeState("fall",                                                             // new state
+						board[row][curr.getCol()].getType(),                                // keep type
+						above + below + 1,                                                  // fall above + below + 1
+						board[row][curr.getCol()].getFallingConst() * (above + below + 1)); // appropriate speed
+	}
 
-    //tell every Tile above match that it should fall
-    for (int row = (curr.getRow() - above - 1); row >= 0; row--)
-    {
-      board[row][curr.getCol()].changeState("fall",                                                             // new state
-                                            board[row][curr.getCol()].getType(),                                // keep type
-                                            above + below + 1,                                                  // fall above + below + 1
-                                            board[row][curr.getCol()].getFallingConst() * (above + below + 1)); // appropriate speed
-    }
-
-    //set all matching Tiles to invisible
-    while (above > 0)
-    { //remove all above
-      board[curr.getRow() - above][curr.getCol()].changeState("empty");
-      above--;
-    }
-    while (below > 0)
-    { //remove all below
-      board[curr.getRow() + below][curr.getCol()].changeState("empty");
-      below--;
-    }
-  } // end if above + below >= 2
+      //set all matching Tiles to invisible
+      while (above > 0)
+	{ //remove all above
+	  board[curr.getRow() - above][curr.getCol()].changeState("empty");
+	  above--;
+	}
+      while (below > 0)
+	{ //remove all below
+	  board[curr.getRow() + below][curr.getCol()].changeState("empty");
+	  below--;
+	}
+    } // end if above + below >= 2
 }
