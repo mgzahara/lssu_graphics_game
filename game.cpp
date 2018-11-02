@@ -75,8 +75,8 @@ void Game::startBoard()
   //as tiles are filled, check to the left and above for matches
   //if match was created, chose a diffrent type so as to not create a match
 
-  int lower = 0;
-  int upper = 5;
+  static int lower = 0;
+  static int upper = 5;
 
   for (int i = 0; i < BOARD_SIZE; i++)
     { //row
@@ -136,13 +136,26 @@ void Game::startBoard()
 	    }   //end else
 	}     //end inner for loop
     }       //end outer for loop
+
+  //start above board Tiles
+  for(int i = 0; i <= 7; i++)
+    {
+      aboveBoard[i].setRow(-1); //just above board
+      aboveBoard[i].setCol(i); //but still in proper cols
+      aboveBoard[i].setType((rand() % (upper - lower + 1)) + lower); //random type
+      aboveBoard[i].setDstX((float)(i * GRID_SIZE + BOX_SIZE + 6)); //in line with cols
+      aboveBoard[i].setDstY((float)(-1 * GRID_SIZE + BOX_SIZE + 6)); //just above board
+    }
 }
 
 //new
 
 void Game::updateBoard()
 {
-  // printf("new board update\n----------------\n");
+
+  static int lower = 0;
+  static int upper = 5;  
+  
   //update all Tiles - go backwards to facilitate falling Tile sprite hand off
   for (int i = 7; i >= 0; i--)
     {
@@ -150,6 +163,18 @@ void Game::updateBoard()
 	{
 	  board[i][j].update();
 	}
+    }
+
+  //update all Tile above board
+  for(int i = 7; i >= 0; i--)
+    {
+      if(aboveBoard[i].isFalling() and aboveBoard[i].getType() == -1)
+	{
+	  //above board Tile is 'falling' but type is -1 (done falling)
+	  aboveBoard[i].changeState("idle");
+	  aboveBoard[i].setType((rand() % (upper - lower + 1)) + lower);
+	}
+      aboveBoard[i].update();
     }
 }
 
@@ -497,6 +522,15 @@ void Game::match(Tile curr)
 					  board[row][col].getFallingConst()); // regular speed
 	    }
 	}
+      //tell all aboveBoard Tiles to fall
+      for(int col = (curr.getCol() - refLeft); col <= (curr.getCol() + refRight); col++)
+	{
+	  aboveBoard[col].changeState("fall",                             // new state
+				      aboveBoard[col].getType(),          // keep type
+				      1,                                  // fall 1
+				      aboveBoard[col].getFallingConst()); // regular speed
+	}
+      
 
       //set all matching Tiles to invisible
       while (left > 0)
@@ -520,10 +554,17 @@ void Game::match(Tile curr)
 	  printf("\nGame:: telling tile (row: %d col: %d) to fall\n", row, curr.getCol());
 	  board[row][curr.getCol()].changeState("fall",                                                             // new state
 						board[row][curr.getCol()].getType(),                                // keep type
-						above + below + 1,                                                  // fall above + below + 1
-						board[row][curr.getCol()].getFallingConst() * (above + below + 1)); // appropriate speed
+						refAbove + refBelow + 1,                                                  // fall above + below + 1
+						board[row][curr.getCol()].getFallingConst() * (refAbove + refBelow + 1)); // appropriate speed
 	}
 
+
+      //tell all aboveBoard Tiles to fall
+      aboveBoard[curr.getCol()].changeState("fall",
+					    aboveBoard[curr.getCol()].getType(),
+					    refAbove + refBelow + 1,
+					    aboveBoard[curr.getCol()].getFallingConst() * (refAbove + refBelow + 1));
+      
       //set all matching Tiles to invisible
       while (above > 0)
 	{ //remove all above

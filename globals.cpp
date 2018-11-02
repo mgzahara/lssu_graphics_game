@@ -25,6 +25,7 @@ int box_x = -200; //location for activeTile highlighting
 int box_y = -200; //location for activeTile highlighting
 
 Tile board[8][8]; //hold all board Tiles
+Tile aboveBoard[8]; //hold tiles to fill in board
 Tile activeTile;  //used as reference point for which Tile is 'active'
 
 SDL_Texture *gems[6];

@@ -51,6 +51,10 @@ int Tile::getMatchStatus()
 {
   return this->matchStatus;
 }
+bool Tile::isFalling()
+{
+  return (this->state == STATE::FALL);
+}
 //setters
 void Tile::setRow(int r)
 {
@@ -412,6 +416,12 @@ void Tile::update()
 			 this->getType(),
 			 this->getFallsRemaining() - 1,
 			 this->getFallingSpeed());
+
+	  //I have fallen all the way, set my type to -1
+	  //this only lasts until the tile above me tells me to take its falling tile
+	  //UNLESS: I am the top tile (aboveBoard[])
+	  //the -1 type will tell Game to give me a new type
+	  this->setType(-1);
 	}
       break;
 

@@ -30,7 +30,8 @@ class Tile
 	int matchStatus;
 	void setMatchStatus(int);
 	int getMatchStatus();
-void swapTypes();
+	void swapTypes();
+	bool isFalling();
 
 	//consts
 	int GRID_SIZE;

@@ -29,6 +29,7 @@ extern int box_x;
 extern int box_y; //location for activeTile highlighting
 
 extern Tile board[8][8]; //hold all board Tiles
+extern Tile aboveBoard[8]; //hold tiles to fill in board
 extern Tile activeTile;  //used as reference point for which Tile is 'active'
 
 extern SDL_Texture *gems[6];
