@@ -159,12 +159,6 @@ void Game::updateBoard()
   static int lower = 0;
   static int upper = 5;  
 
-  //update all Tile above board
-  for(int i = 7; i >= 0; i--)
-    {
-      aboveBoard[i].update();
-    }
-  
   //update all Tiles - go backwards to facilitate falling Tile sprite hand off
   for (int i = 7; i >= 0; i--)
     {
@@ -174,6 +168,12 @@ void Game::updateBoard()
 	}
     }
 
+  //update all Tile above board
+  for(int i = 7; i >= 0; i--)
+    {
+      aboveBoard[i].update();
+    }
+  
 }
 
 void Game::checkForMatches()
