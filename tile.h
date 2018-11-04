@@ -3,7 +3,6 @@
 
 #include "SDL.h"
 #include "SDL_image.h"
-// #include "globals.h"
 
 class Tile
 {
@@ -11,21 +10,32 @@ class Tile
 	//states for Tile state machine
 	enum STATE
 	{
-		IDLE,
-		ACTIVE,
-		SWAP,
-		PAWS,
-		EMPTY,
-		FALL,
-		MATCH
+	  IDLE,
+	  ACTIVE,
+	  SWAP,
+	  PAWS,
+	  EMPTY,
+	  FALL,
+	  MATCH
 	};
-
+	enum BOOST
+	{
+	  NORMAL,
+	  BOMB,
+	  ZAP_V, //just vertical
+	  ZAP_H, //just horizontal
+	  ZAP_B  //both horizontal and veritcal
+	};
+	
 	int row;
 	int col;
 	int type;
 	//visual coords of sprite
 	float spriteDstX;
 	float spriteDstY;
+	
+	STATE state;
+	BOOST boost;
 
 	bool shouldBeEmpty;
 	bool keepFalling;
@@ -37,7 +47,7 @@ class Tile
 	void swapSpriteCounters();
 	int getRandType();
 	bool emptyBelowMe();
-	void spriteHandOff(int, int);
+	void spriteHandOff(int, int, BOOST);
 
 	void printColor(int);
 	//consts
@@ -46,8 +56,6 @@ class Tile
 	int BOX_SIZE;
 	int TILE_FALLING_SPEED;
 	int TILE_SWAPPING_SPEED;
-
-	STATE state;
 
 	//new
 	int spriteCounter;
@@ -100,17 +108,11 @@ class Tile
 	int getRow();
 	int getCol();
 	int getType();
-	//int getHiddenType();
 	float getDstX();
 	float getDstY();
 	bool getActive();
 	bool isAdjacent(Tile t);
 	bool getSwapping();
-	//new
-	//the main function for a Tile
-
-	//Tile operator =  (Tile t);
-	//bool operator == (Tile t);
 
 	//constructor
 	Tile();
@@ -132,5 +134,8 @@ class Tile
 	bool isInIdleState();
 	bool isFalling();
 	bool isNotBusy();
+	void displayInfo(const char*, int, int, SDL_Color);
+	void changeBoostMode(int);
+	void triggerBoost();
 };
 #endif

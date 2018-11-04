@@ -423,7 +423,7 @@ void Game::match(Tile curr)
   int left, right, above, below, refLeft, refRight, refAbove, refBelow;
   char *matchString;
   bool shouldPaws, tileIsSwapping;
-  int swapeeRow, swapeeCol;
+  int swapeeRow, swapeeCol, boostMode = 0;
 
   // decide up front if this tile is a swapping check or a falling check
   tileIsSwapping = (board[curr.getRow()][curr.getCol()].getSwappingDirection() != 0) ? true : false;
@@ -465,18 +465,40 @@ void Game::match(Tile curr)
   if (((left + right) >= 2) or ((above + below) >= 2))
     { //a match was made - update my match status and check my swapee's status
 
+      //special check      
+      if(((left + right) >= 2) and ((above + below) >= 2))
+	{
+	  //ZAP_B
+	  boostMode = 4;
+	}
+      else if(((left + right) == 3) or ((above + below) == 3))
+	{
+	  //BOMB
+	  boostMode = 1;
+	}
+      else if((left + right) > 3)
+	{
+	  //ZAP_H
+	  boostMode = 2;
+	}
+      else if((above + below) > 3)
+	{
+	  //ZAP_V
+	  boostMode = 3;
+	}
+
       if (tileIsSwapping)
 	{
 	  board[curr.getRow()][curr.getCol()].setMatchStatus(1); //mark that I have made a match
 	  switch (board[swapeeRow][swapeeCol].getMatchStatus())
 	    {
 	    case 0: //swapee not checked yet
-	      //do nothing
+	      board[curr.getRow()][curr.getCol()].changeState("empty", boostMode);
 	      break;
 
-	    case 1: //swapee made a match - set both of us to empty
-	      board[curr.getRow()][curr.getCol()].changeState("empty");
-	      board[swapeeRow][swapeeCol].changeState("empty");
+	    case 1: //swapee made a match
+	      board[curr.getRow()][curr.getCol()].changeState("empty", boostMode);
+
 	      break;
 
 	    case 2: //swapee did NOT make a match - me empty, them idle
@@ -484,7 +506,7 @@ void Game::match(Tile curr)
 	      board[swapeeRow][swapeeCol].setSwapType(board[swapeeRow][swapeeCol].getType());
 	      //tell them they are idle
 	      board[swapeeRow][swapeeCol].changeState("idle");          //make sure this doesnt do anything with types
-	      board[curr.getRow()][curr.getCol()].changeState("empty"); // change my state to empty
+	      board[curr.getRow()][curr.getCol()].changeState("empty", boostMode); // change my state to empty
 	      break;
 
 	    default:
@@ -494,7 +516,7 @@ void Game::match(Tile curr)
 	}
       else
 	{                                                           // this match check is being made on a falling tile - not a swapping one
-	  board[curr.getRow()][curr.getCol()].changeState("empty"); // change my state to empty
+	  board[curr.getRow()][curr.getCol()].changeState("empty", boostMode); // change my state to empty
 	}
     } // end of if match made
 
@@ -515,7 +537,6 @@ void Game::match(Tile curr)
 	      //update my swapType to my type - I am staying where I am
 	      board[curr.getRow()][curr.getCol()].setSwapType(board[swapeeRow][swapeeCol].getType());
 	      board[curr.getRow()][curr.getCol()].changeState("idle"); // I am idle
-	      board[swapeeRow][swapeeCol].changeState("empty");        // swapee is empty
 	      break;
 
 	    case 2: // swapee did NOT make a match - both to paws

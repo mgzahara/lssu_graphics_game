@@ -1,10 +1,10 @@
-//include something here to init SDL renderer immediately
 #include "math.h"
 #include "iostream"
 #include "SDL.h"
 #include "SDL_image.h"
 #include "globals.h"
 #include "tile.h"
+#include "Fixed_print.h"
 
 #ifndef TILE_CPP
 #define TILE_CPP
@@ -25,7 +25,8 @@ Tile::Tile()
   //  TILE_SWAPPING_SPEED = 2.5;
 
   state = STATE::IDLE;
-
+  boost = BOOST::NORMAL;
+  
   this->setMaxSprite(30);
   //toggle to allow tiles to finish 'falling' after bottom place is filled
   this->keepFalling = false;
@@ -372,7 +373,7 @@ float Tile::getFallingSpeed()
 
 //action functions
 
-void Tile::spriteHandOff(int newType, int newSpriteCounter)
+void Tile::spriteHandOff(int newType, int newSpriteCounter, BOOST b)
 {
   //accept new sprite
   //printf("spriteHandOff() to Tile (row: %d col: %d)\n", this->row, this->col);
@@ -383,7 +384,8 @@ void Tile::spriteHandOff(int newType, int newSpriteCounter)
 
   this->setType(newType); // will reset visual pos
   this->setSpriteCounter(newSpriteCounter);
-
+  this->boost = b;
+  
   if(!this->emptyBelowMe())
     {
       //no empty Tiles below me, check me for a match
@@ -427,8 +429,7 @@ void Tile::update()
 	      //hand off my info
 	      //printf("before calling psriteHandOff()\n\tthis->type: %d\n\tthis->spriteCounter: %d\n\n",
 	      //this->type, this->spriteCounter);
-	      board[this->row + 1][this->col].spriteHandOff(this->type, this->spriteCounter);
-
+	      board[this->row + 1][this->col].spriteHandOff(this->type, this->spriteCounter, this->boost);
 	      
 	      if(this->row == -1)
 		{
@@ -495,7 +496,7 @@ void Tile::update()
     case STATE::PAWS:
 
       deltaX = deltaY = 0;
-      this->matchStatus = 0;                                                         //reset match status from a possible transition from STATE::MATCH
+      this->matchStatus = 0;//reset match status from a possible transition from STATE::MATCH
       this->setSpriteCounter((this->getSpriteCounter() + 1) % this->getMaxSprite()); //spin
 
       switch (this->getSwappingDirection())
@@ -614,12 +615,56 @@ void Tile::update()
       //tile is visible
       SDL_RenderCopy(renderer, gems[this->getType()], &src, &dst);
     }
+  //place any boost visual on top of Tile
+  SDL_Color c; c.r = c.g = c.b = 255;
+  switch(this->boost)
+    {
+      //0
+    case BOOST::NORMAL: //no extra visual needed
+      break;
+      
+      //1
+    case BOOST::BOMB:
+      displayInfo("B", this->getCol() * 50, this->getRow() * 50, c);
+      break;
 
+      //2
+    case BOOST::ZAP_H:
+      displayInfo("ZH", this->getCol() * 50, this->getRow() * 50, c);
+      break;
+
+      //3
+    case BOOST::ZAP_V:
+      displayInfo("ZV", this->getCol() * 50, this->getRow() * 50, c);
+      break;
+
+      //4
+    case BOOST::ZAP_B:
+      displayInfo("ZB", this->getCol() * 50, this->getRow() * 50, c);
+      break;
+    }
+  
   if(this->shouldBeEmpty)
     {
       this->shouldBeEmpty = false;
       this->changeState("empty");
     }
+  
+}
+
+
+void Tile::displayInfo(const char* str, int x, int y, SDL_Color c)
+{//use schemms Fixed_print.c to print string only
+  
+  char displayString[50];
+
+  strcpy(displayString, str);//player 2 wins
+  FixedPrint(renderer, //sdl_renderer
+             x, //x coord
+             y, //y coord
+             displayString, //text
+             &c, //address of color
+             2); //size: 0, 1, or 2
 }
 
 int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
@@ -695,6 +740,25 @@ int Tile::changeState(const char *newState, int arg2) //, int arg3)
 	  exit(-1);
 	}
     }
+    else if (newState == "empty")
+    {
+      //arg2 is boostMode
+      //reset swap direction
+      this->setSwappingDirection(0);
+      this->triggerBoost();
+
+      if(arg2 == 0)
+	{
+	  //no special Tile made
+	  this->state = STATE::EMPTY;
+	  this->setType(-1); //update type and swapType to -1 - empty
+	}
+      else
+	{
+	  //I am now a special Tile
+	  this->changeBoostMode(arg2);
+	}
+    }
   else
     {
       printf("\nTile::changeState('', int) did not receive expected arg\n\tnewState: %s\n\targ2: %d\n\n", newState, arg2);
@@ -709,6 +773,7 @@ int Tile::changeState(const char *newState)
     {
       //printf("\trow: %d and col: %d - changed to state IDLE\n", this->getRow(), this->getCol());
       this->state = STATE::IDLE;
+      //this->boost = BOOST::NORMAL;
       //reset my visual coords
       this->setDstX(this->getDefaultSpriteX());
       this->setDstY(this->getDefaultSpriteY());
@@ -727,6 +792,7 @@ int Tile::changeState(const char *newState)
       this->setType(-1); //update type and swapType to -1 - empty
       //reset swap direction
       this->setSwappingDirection(0);
+      this->triggerBoost();
     }
   else if (newState == "paws")
     {
@@ -765,37 +831,51 @@ int Tile::changeState(const char *newState)
     }
 }
 
-/* research more on overloading 
-   
-   Tile Tile::operator = (Tile t)
-   {//overloading assignment operator
-   Tile temp;
-   temp.setRow(row);
-   temp.setCol(col);
-   temp.setType(type);
-   
-   printf("\n\n\t = operator returning:\n");
-   printf("\ttemp row:  %d\n", temp.getRow()  );
-   printf("\ttemp col:  %d\n", temp.getCol()  );
-   printf("\ttemp type: %d\n", temp.getType() );
-   printf("\n");
-   
-   return temp;
-   }
-*/
-/*
-  bool Tile::operator == (Tile t)
-  {//overloading comparison operator
-  
-  if(row ==  t.getRow() and 
-  col ==  t.getCol() and 
-  type == t.getType() )
-  {
-  return true;
-  }
-  
-  return false;
-  }
-*/
+void Tile::triggerBoost()
+{
+  switch(this->boost)
+    {
+    case BOOST::NORMAL: //do nothing
+      break;
+      
+    case BOOST::BOMB: //the 8 surrounding
+      break;
+      
+    case BOOST::ZAP_V: //entire col
+      break;
+      
+    case BOOST::ZAP_H: //entire row
+      break;
+      
+    case BOOST::ZAP_B: //entire col and row
+      break;
+    }
+}
+
+void Tile::changeBoostMode(int b)
+{
+  switch(b)
+    {
+    case 0:
+      this->boost = BOOST::NORMAL;
+      break;
+
+    case 1:
+      this->boost = BOOST::BOMB;
+      break;
+
+    case 2:
+      this->boost = BOOST::ZAP_H;
+      break;
+
+    case 3:
+      this->boost = BOOST::ZAP_V;
+      break;
+
+    case 4:
+      this->boost = BOOST::ZAP_B;
+      break;
+    }
+}
 
 #endif

@@ -1,7 +1,8 @@
 /* TODO
  *
- * Tile class assignment operator
- * Tile class << operator
+ * Swap doesn't preserve boosts
+ * Points
+ * Time Limit
  *
  */
 
@@ -66,9 +67,11 @@ int main(int argc, char **args)
 
     game.handleLeftMouseClick(mouse_x, mouse_y);
 
-
     game.updateBoard();
 
+    //TS
+    //SDL_Delay(500);
+    
     game.checkForMatches();
 
     game.drawHighlightBox();
