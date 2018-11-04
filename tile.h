@@ -33,7 +33,8 @@ class Tile
 	int matchStatus;
 	void setMatchStatus(int);
 	int getMatchStatus();
-	void swapTypes();	
+	void swapTypes();
+	void swapSpriteCounters();
 	int getRandType();
 	bool emptyBelowMe();
 	void spriteHandOff(int, int);
@@ -50,6 +51,7 @@ class Tile
 
 	//new
 	int spriteCounter;
+	int oldSpriteCounter; // newer
 	int maxSprite;
 	bool active;
 	bool swapping;
@@ -121,14 +123,14 @@ class Tile
 	void update();
 	//overload this function to your hearts content
 	int changeState(const char *, int, int, int);
-	int changeState(const char *, int);
+	int changeState(const char *, int); //, int);
 	int changeState(const char *);
 	//state checkers
 	bool isInMatchState();
 	bool isInFallingState();
 	bool isInEmptyState();
 	bool isInIdleState();
-
-	
+	bool isFalling();
+	bool isNotBusy();
 };
 #endif

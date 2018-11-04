@@ -47,6 +47,13 @@ void Tile::swapTypes()
   this->type = this->swapType;
   this->swapType = tmp;
 }
+void Tile::swapSpriteCounters()
+{
+  //change values of spriteCounter and oldSpriteCounter with each other
+  int tmp = this->spriteCounter;
+  this->spriteCounter = this->oldSpriteCounter;
+  this->oldSpriteCounter = tmp;
+}
 void Tile::setMatchStatus(int s)
 {
   this->matchStatus = s;
@@ -117,9 +124,9 @@ void Tile::setSwapping(bool b)
 }
 void Tile::setSwapping(bool b, int d, int t)
 {
-  printf("setSwapping()\n");
-  printf("d: %s\n", b ? "true" : "false");
-  printf("direction: %d\n swapType: %d\n\n", d, t);
+  //printf("setSwapping()\n");
+  //printf("d: %s\n", b ? "true" : "false");
+  //printf("direction: %d\n swapType: %d\n\n", d, t);
 
   swapping = b;
   this->setSwappingDirection(d);
@@ -134,9 +141,9 @@ void Tile::setFallingSpeed(float s)
 void Tile::setFalling(bool f, int dis)
 {
 
-  printf("setFalling() \n");
-  printf("f: %s\n", f ? "true" : "false");
-  printf("dis: %d\n", dis);
+  //printf("setFalling() \n");
+  //printf("f: %s\n", f ? "true" : "false");
+  //printf("dis: %d\n", dis);
 
   //public to be called by match to start falling process
   falling = f;
@@ -242,7 +249,7 @@ int Tile::sign(float x)
 void Tile::takeFallingSprite(int type, int falls, float speed) //old
 {
 
-  printf("takeFallingSprite() \n");
+  //printf("takeFallingSprite() \n");
 
   //how a Tile hands off its falling sprite to another Tile
   this->setType(type);
@@ -281,7 +288,10 @@ bool Tile::isAdjacent(Tile t)
   return false;
 }
 
-
+bool Tile::isNotBusy()
+{
+  return this->isInIdleState() and !this->emptyBelowMe();
+}
 bool Tile::isInMatchState()
 {
   return (this->state == STATE::MATCH);
@@ -298,6 +308,11 @@ bool Tile::isInIdleState()
 {
   return (this->state == STATE::IDLE);
 }
+bool Tile::isFalling()
+{
+  return this->emptyBelowMe();
+}
+
 void Tile::printColor(int newType)
 {
   //  printf("top of printColor, this->type: %d\n", this->type);
@@ -338,24 +353,6 @@ bool Tile::emptyBelowMe()
 	  //this->keepFalling = true;
 	}
     }
-  /*
-  if(flag and this->keepFalling)
-    {
-      //empty found - real true
-      return true;
-    }
-  else if(this->keepFalling)
-    {
-      //no empty found - fake true
-      this->keepFalling = false;
-      return true;
-    }
-  else
-    {
-      //no empty found and toggle is off - real false
-      return false;
-    }
-  */
   return flag;
 
 }
@@ -370,22 +367,6 @@ float Tile::getFallingSpeed()
 	  emptyTiles = emptyTiles + 1;
 	}
     }
-  /*
-  if(this->emptyBelowMe() and this->keepFalling)
-    {
-      //emptyTiles is accurate
-      return this->TILE_FALLING_SPEED * (float) emptyTiles;    
-    }
-  else if (this->keepFalling)
-    {
-      //emptyTiles is inaccurate
-      return this->TILE_FALLING_SPEED * ((float) emptyTiles + 1.0);
-    }
-  else
-    {
-      return (float) 0.0;
-    }
-  */
   return this->TILE_FALLING_SPEED * (float) emptyTiles;
 }
 
@@ -394,16 +375,12 @@ float Tile::getFallingSpeed()
 void Tile::spriteHandOff(int newType, int newSpriteCounter)
 {
   //accept new sprite
-  printf("spriteHandOff() to Tile (row: %d col: %d)\n", this->row, this->col);
-  printf("\treceived a Tile of type %d and color: ", newType);
+  //printf("spriteHandOff() to Tile (row: %d col: %d)\n", this->row, this->col);
+  //printf("\treceived a Tile of type %d and color: ", newType);
   //  fflush(stdout);
-  printColor(newType);
-  printf("\n\n");
+  //printColor(newType);
+  //printf("\n\n");
 
-  //when this function is called, I am empty
-  //if there is no other empty Tile below me, call for a match
-  
-  
   this->setType(newType); // will reset visual pos
   this->setSpriteCounter(newSpriteCounter);
 
@@ -428,8 +405,7 @@ void Tile::update()
   switch (this->state)
     {
     case STATE::IDLE:
-      //      this->setDstY(this->getDefaultSpriteY());
-      //      this->setDstY(this->getDefaultSpriteY());
+
       this->matchStatus = 0; //reset match status from a possible transition from STATE::MATCH
       if (this->getSpriteCounter() != 0)
 	{
@@ -449,8 +425,8 @@ void Tile::update()
 	      //my visual is in place for the next Tile to take it
 
 	      //hand off my info
-	      printf("before calling psriteHandOff()\n\tthis->type: %d\n\tthis->spriteCounter: %d\n\n",
-		     this->type, this->spriteCounter);
+	      //printf("before calling psriteHandOff()\n\tthis->type: %d\n\tthis->spriteCounter: %d\n\n",
+	      //this->type, this->spriteCounter);
 	      board[this->row + 1][this->col].spriteHandOff(this->type, this->spriteCounter);
 
 	      
@@ -475,6 +451,7 @@ void Tile::update()
       break;
 
     case STATE::SWAP:
+      
       deltaX = deltaY = 0;
       this->setSpriteCounter((this->getSpriteCounter() + 1) % this->getMaxSprite());
       switch (this->getSwappingDirection())
@@ -503,7 +480,8 @@ void Tile::update()
 	{
 	  //tell game to check me for match
 	  this->state = STATE::MATCH;
-	  this->swapTypes(); //change type to swapType and swapType to type
+	  //swap values of type and swapType, also both spriteCounters
+	  this->swapTypes(); 
 	  //reset visual coords
 	  this->setDstX(getDefaultSpriteX());
 	  this->setDstY(getDefaultSpriteY());
@@ -559,6 +537,7 @@ void Tile::update()
       break;
 
     case STATE::ACTIVE:
+      
       //ensure default coords
       this->setDstY(this->getDefaultSpriteY());
       this->setDstY(this->getDefaultSpriteY());
@@ -568,13 +547,15 @@ void Tile::update()
       break;
 
     case STATE::EMPTY:
+      
       //ensure the empty sprite - OR - dont put them on renderer
       this->setType(-1);
       this->matchStatus = 0; //reset match status from a possible transition from STATE::MATCH
       break;
 
     case STATE::FALL:
-      printf("tile (row: %d col: %d) is in FALL\n", this->row, this->col);
+      
+      //printf("tile (row: %d col: %d) is in FALL\n", this->row, this->col);
       //be sure that each falling sprite is at 0
       // this->setSpriteCounter(0);
       if (this->getSpriteCounter() != 0)
@@ -605,8 +586,10 @@ void Tile::update()
 	}//end of if dstY == defaultDstY + GRID_SIZE
       break;
 
-    case STATE::MATCH: //shouldnt even get here - Game should change it before update gets called again
-      // printf("my state is match\n");
+    case STATE::MATCH:
+
+      //shouldnt even get here - Game should change it before update gets called again
+      printf("my state is match... it probably shouldn't be\n");
       break;
 
     default:
@@ -641,10 +624,10 @@ void Tile::update()
 
 int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
 { //fall
-  printf("Tile:: change state to fall on tile (row: %d col:%d)\n", this->row, this->col);
+  //printf("Tile:: change state to fall on tile (row: %d col:%d)\n", this->row, this->col);
   if (newState == "fall")
     {
-      printf("\trow: %d and col: %d - changed to state FALL\n", this->getRow(), this->getCol());
+      //printf("\trow: %d and col: %d - changed to state FALL\n", this->getRow(), this->getCol());
       /*
 	arg2 - type
 	arg3 - my fallsRemaining
@@ -669,39 +652,42 @@ int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
     }
 }
 
-int Tile::changeState(const char *newState, int arg2)
+int Tile::changeState(const char *newState, int arg2) //, int arg3)
 { //swap
   if (newState == "swap")
     {
-      printf("\trow: %d and col: %d - changed to state SWAP\n", this->getRow(), this->getCol());
+      //printf("\trow: %d and col: %d - changed to state SWAP\n", this->getRow(), this->getCol());
       /* arg2 is new direction
 	 1 - go left
 	 2 - go right
 	 3 - go up
 	 4 - go down */
+      // arg3 is the swapee's spriteCounter
 
-      printf("state changed to swap\n");
+      //printf("state changed to swap\n");
       this->state = STATE::SWAP;
       this->swappingDirection = arg2;
-
-      // return 0;
 
       switch (arg2)
 	{ //what is my new type once I swap?
 	case 1:
 	  this->setSwapType(board[this->row][this->col - 1].getType());
+	  //this->oldSpriteCounter = board[this->row][this->col - 1].getSpriteCounter();
 	  break;
 
 	case 2:
 	  this->setSwapType(board[this->row][this->col + 1].getType());
+	  //this->oldSpriteCounter = board[this->row][this->col + 1].getSpriteCounter();
 	  break;
 
 	case 3:
 	  this->setSwapType(board[this->row - 1][this->col].getType());
+	  //this->oldSpriteCounter = board[this->row - 1][this->col].getSpriteCounter();
 	  break;
 
 	case 4:
 	  this->setSwapType(board[this->row + 1][this->col].getType());
+	  //this->oldSpriteCounter = board[this->row + 1][this->col].getSpriteCounter();
 	  break;
 
 	default:
@@ -721,7 +707,7 @@ int Tile::changeState(const char *newState)
 
   if (newState == "idle")
     {
-      printf("\trow: %d and col: %d - changed to state IDLE\n", this->getRow(), this->getCol());
+      //printf("\trow: %d and col: %d - changed to state IDLE\n", this->getRow(), this->getCol());
       this->state = STATE::IDLE;
       //reset my visual coords
       this->setDstX(this->getDefaultSpriteX());
@@ -731,13 +717,12 @@ int Tile::changeState(const char *newState)
     }
   else if (newState == "active")
     {
-      printf("\trow: %d and col: %d - changed to state ACTIVE\n", this->getRow(), this->getCol());
+      //printf("\trow: %d and col: %d - changed to state ACTIVE\n", this->getRow(), this->getCol());
       this->state = STATE::ACTIVE;
     }
   else if (newState == "empty")
     {
-      //TELL EVERY TILE ABOVE TO FALL
-      printf("\trow: %d and col: %d - changed to state EMPTY\n", this->getRow(), this->getCol());
+      //printf("\trow: %d and col: %d - changed to state EMPTY\n", this->getRow(), this->getCol());
       this->state = STATE::EMPTY;
       this->setType(-1); //update type and swapType to -1 - empty
       //reset swap direction
@@ -745,7 +730,7 @@ int Tile::changeState(const char *newState)
     }
   else if (newState == "paws")
     {
-      printf("\trow: %d and col: %d - changed to state PAWS\n", this->getRow(), this->getCol());
+      //printf("\trow: %d and col: %d - changed to state PAWS\n", this->getRow(), this->getCol());
       this->state = STATE::PAWS;
 
       return 0;

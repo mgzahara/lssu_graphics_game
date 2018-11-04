@@ -12,11 +12,17 @@
 #include "globals.h"
 #include "tile.h"
 #include "game.h"
+#include "Fixed_print.h"
 
 using namespace std;
 
 void quitSDL();
 bool initSDL();
+
+void displayInfo(const char*, int, int, int, SDL_Color);//string + int
+void displayInfo(const char*, float, int, int, SDL_Color);//string + float
+void displayInfo(const char*, int, int, SDL_Color);//string
+
 void loadTextures();
 SDL_Texture *loadImage(const char *);
 
@@ -60,12 +66,15 @@ int main(int argc, char **args)
 
     game.handleLeftMouseClick(mouse_x, mouse_y);
 
+
     game.updateBoard();
 
     game.checkForMatches();
 
     game.drawHighlightBox();
 
+    game.drawPanel();
+    
     // Update window
     SDL_RenderPresent(renderer);
 
@@ -107,7 +116,7 @@ bool initSDL()
     return false;
   }
   //create window
-  window = SDL_CreateWindow("Grid",
+  window = SDL_CreateWindow("Don't Be Jeweled!",
                             SDL_WINDOWPOS_UNDEFINED,
                             SDL_WINDOWPOS_UNDEFINED,
                             WINDOW_WIDTH,
@@ -136,6 +145,9 @@ bool initSDL()
   //black out the screen
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
+
+  //init text to screen
+  FixedPrint_Setup();
 
   return true;
 }
@@ -166,3 +178,4 @@ SDL_Texture *loadImage(const char *filename)
 
   return texture;
 }
+

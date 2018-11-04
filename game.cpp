@@ -4,6 +4,8 @@
 #include "iostream"
 #include "globals.h"
 #include "tile.h"
+#include "Fixed_print.h"
+
 
 Game::Game()
 {
@@ -34,10 +36,10 @@ bool Game::validLeftMouseClick(int mouse_x, int mouse_y)
 
 bool Game::shouldSwapTiles(int clickRow, int clickCol)
 {
-  return (activeTile.getRow() >= 0) and
-    (activeTile.getCol() >= 0) and
-    (board[activeTile.getRow()][activeTile.getCol()]
-     .isAdjacent(board[clickRow][clickCol]));
+  return (activeTile.getRow() >= 0)
+    and (activeTile.getCol() >= 0)
+    and (board[activeTile.getRow()][activeTile.getCol()]
+	 .isAdjacent(board[clickRow][clickCol]));
 }
 
 void Game::drawHighlightBox()
@@ -173,7 +175,6 @@ void Game::updateBoard()
     {
       aboveBoard[i].update();
     }
-  
 }
 
 void Game::checkForMatches()
@@ -213,28 +214,28 @@ char *Game::matchCheck(Tile currTile)
 
   //currTile is board[row][col]
 
-  while (col > 0 and board[row][col - 1].getType() == type)
+  while (col > 0 and board[row][col - 1].getType() == type and !board[row][col - 1].isFalling())
     { //while left matches
       leftMatches++;
       col--;
     }
   col = currTile.getCol();
 
-  while (col < BOARD_SIZE - 1 and board[row][col + 1].getType() == type)
+  while (col < BOARD_SIZE - 1 and board[row][col + 1].getType() == type and !board[row][col + 1].isFalling())
     { //while right matches
       rightMatches++;
       col++;
     }
   col = currTile.getCol();
 
-  while (row > 0 and board[row - 1][col].getType() == type)
+  while (row > 0 and board[row - 1][col].getType() == type and !board[row - 1][col].isFalling())
     { //while above matches
       aboveMatches++;
       row--;
     }
   row = currTile.getRow();
 
-  while (row < BOARD_SIZE - 1 and board[row + 1][col].getType() == type)
+  while (row < BOARD_SIZE - 1 and board[row + 1][col].getType() == type and !board[row + 1][col].isFalling())
     { //while below matches
       belowMatches++;
       row++;
@@ -269,6 +270,9 @@ void Game::drawBoard()
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
 
+  //do we need a grid?
+  return;
+  
   //draw a grid in maroon
   SDL_SetRenderDrawColor(renderer, 128, 0, 0, 255);
   for (int i = 1; i <= (WINDOW_WIDTH / GRID_SIZE); i++)
@@ -286,16 +290,18 @@ void Game::drawBoard()
 void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
 {
   // printf("handleLeftMouseClick() \n");
+  int clickRow = mouse_y / GRID_SIZE;
+  int clickCol = mouse_x / GRID_SIZE;
 
-  if (validLeftMouseClick(mouse_x, mouse_y))
+  if (validLeftMouseClick(mouse_x, mouse_y)
+      and board[clickRow][clickCol].isNotBusy())
     {
       //click was made within constraints
-      int clickRow = mouse_y / GRID_SIZE;
-      int clickCol = mouse_x / GRID_SIZE;
+      //and second Tile clicked was not busy
 
       if (shouldSwapTiles(clickRow, clickCol))
 	{
-	  printf("a swap has occurred\n");
+	  //printf("a swap has occurred\n");
 	  //swap - tell tiles they are to move
 	  int activeTileDir = 0, newClickDir = 0;
 
@@ -349,7 +355,7 @@ void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
 	  board[clickRow][clickCol]
 	    .changeState("swap", newClickDir);
 
-	  printf("activeTile was updated to out of bounds\n");
+	  //printf("activeTile was updated to out of bounds\n");
 	  //reset active tile location
 	  activeTile.setRow(-2);
 	  activeTile.setCol(-2);
@@ -358,7 +364,7 @@ void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
       else
 	{
 	  //click was not adjacent, reset activeTile to current click
-	  printf("activeTile was updated to this click\n");
+	  //printf("activeTile was updated to this click\n");
 	  //tell activeTile it is not active
 	  if (activeTile.getRow() >= 0 and activeTile.getCol() >= 0)
 	    {
@@ -381,12 +387,39 @@ void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
 
 	} //end if should swap tiles else
     }   //end if valid mouse click
+  else if (shuffleClick(mouse_x, mouse_y))
+    {
+      bool flag = true;
+      for(int i = 0; i < 7; i++)
+	{
+	  for(int j = 0; j < 7; j++)
+	    {
+	      if(!board[i][j].isNotBusy())
+		{
+		  //this tile IS busy
+		  flag = false;
+		}
+	    }
+	}
+      if(flag)
+	{
+	  //safe to shuffle
+	  for(int i = 0; i < 5; i++)
+	    {
+	      //shuffle, drawboard, update, drawpanel, wait
+	      startBoard();
+	      drawBoard();	    
+	      updateBoard();
+	      drawPanel();
+	      SDL_RenderPresent(renderer);
+	      SDL_Delay(200);
+	    }
+	}
+    }
 }
 
 void Game::match(Tile curr)
 {
-  // printf("\nmatch()\n-------\n\trow: %d and col: %d\n", curr.getRow(), curr.getCol());
-
   int left, right, above, below, refLeft, refRight, refAbove, refBelow;
   char *matchString;
   bool shouldPaws, tileIsSwapping;
@@ -508,28 +541,6 @@ void Game::match(Tile curr)
   if ((left + right) >= 2)
     { //is left-right the match?
 
-      /*      //tell every Tile above match that it should fall
-      for (int row = (curr.getRow() - 1); row >= 0; row--)
-	{ //start right above this match, go up
-	  for (int col = (curr.getCol() - refLeft); col <= (curr.getCol() + refRight); col++)
-	    {
-	      printf("\nGame:: telling tile (row: %d col: %d) to fall\n", row, col);
-	      board[row][col].changeState("fall",                             // new state
-					  board[row][col].getType(),          // keep type
-					  1,                                  // fall 1
-					  board[row][col].getFallingConst()); // regular speed
-	    }
-	}
-      //tell all aboveBoard Tiles to fall
-      for(int col = (curr.getCol() - refLeft); col <= (curr.getCol() + refRight); col++)
-	{
-	  aboveBoard[col].changeState("fall",                             // new state
-				      aboveBoard[col].getType(),          // keep type
-				      1,                                  // fall 1
-				      aboveBoard[col].getFallingConst()); // regular speed
-	}
-      */
-
       //set all matching Tiles to invisible
       while (left > 0)
 	{ //remove all left
@@ -546,23 +557,6 @@ void Game::match(Tile curr)
   if ((above + below) >= 2)
     { // is above-below the match?
 
-      /*      //tell every Tile above match that it should fall
-      for (int row = (curr.getRow() - refAbove - 1); row >= 0; row--)
-	{
-	  printf("\nGame:: telling tile (row: %d col: %d) to fall\n", row, curr.getCol());
-	  board[row][curr.getCol()].changeState("fall",                                                             // new state
-						board[row][curr.getCol()].getType(),                                // keep type
-						refAbove + refBelow + 1,                                                  // fall above + below + 1
-						board[row][curr.getCol()].getFallingConst() * (refAbove + refBelow + 1)); // appropriate speed
-	}
-
-
-	//tell all aboveBoard Tiles to fall
-      aboveBoard[curr.getCol()].changeState("fall",
-					    aboveBoard[curr.getCol()].getType(),
-					    refAbove + refBelow + 1,
-					    aboveBoard[curr.getCol()].getFallingConst() * (refAbove + refBelow + 1));
-      */      
       //set all matching Tiles to invisible
       while (above > 0)
 	{ //remove all above
@@ -575,4 +569,86 @@ void Game::match(Tile curr)
 	  below--;
 	}
     } // end if above + below >= 2
+}
+
+bool Game::shuffleClick(int x, int y)
+{
+  return (x >= 465 and x <= 585) and (y >= 275 and y <= 325);
+}
+
+void Game::drawPanel()
+{
+  //draw entire side panel - start at (420, 20)
+  static SDL_Rect panel = {450, 40, 150, 300};
+  static SDL_Rect shuffleButton = {465, 275, 120, 50};
+  static SDL_Rect scoreBox = {465, 55, 120, 75};
+  static SDL_Color textColor;
+  
+  //background is dark blue (23, 77, 214)
+  SDL_SetRenderDrawColor(renderer, 23, 77, 214, 255);
+  SDL_RenderFillRect(renderer, &panel);
+
+  //shuffle button & scoreBox is teal-ish (64, 192, 206)
+  SDL_SetRenderDrawColor(renderer, 64, 192, 206, 255);
+  SDL_RenderFillRect(renderer, &shuffleButton);
+  SDL_RenderFillRect(renderer, &scoreBox);
+
+  //text is black (0, 0, 0)
+  textColor.r = textColor.g = textColor.b = 0;
+  this->displayInfo("Shuffle", 490, 292, textColor);
+  this->displayInfo("Score:", 485, 68, textColor);
+  this->displayInfo("12345678", 485, 95, textColor);
+  
+}
+
+//print functions
+
+void Game::displayInfo(const char* str, int val, int x, int y, SDL_Color c)
+{//use schemms Fixed_print.c to print string and int
+  
+  char displayString[50];
+  char intString[5];
+
+  strcpy(displayString, str);//player 2 wins
+  
+  sprintf(intString, "%d", val);
+  strcat(displayString, intString );
+  FixedPrint(renderer, //sdl_renderer
+             x, //x coord
+	     y, //y coord
+             displayString, //text
+             &c, //address of color
+             2); //size: 0, 1, or 2
+}
+
+void Game::displayInfo(const char* str, float val, int x, int y, SDL_Color c)
+{//use schemms Fixed_print.c to print string and float
+  
+  char displayString[50];
+  char floatString[10];
+
+  strcpy(displayString, str);//player 2 wins
+  
+  sprintf(floatString, "%.2f", val);
+  strcat(displayString, floatString );
+  FixedPrint(renderer, //sdl_renderer
+             x, //x coord
+	     y, //y coord
+             displayString, //text
+             &c, //address of color
+             2); //size: 0, 1, or 2
+}
+
+void Game::displayInfo(const char* str, int x, int y, SDL_Color c)
+{//use schemms Fixed_print.c to print string only
+  
+  char displayString[50];
+
+  strcpy(displayString, str);//player 2 wins
+  FixedPrint(renderer, //sdl_renderer
+             x, //x coord
+             y, //y coord
+             displayString, //text
+             &c, //address of color
+             2); //size: 0, 1, or 2
 }
