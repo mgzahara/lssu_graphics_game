@@ -35,7 +35,7 @@ class Tile
 	float spriteDstY;
 	
 	STATE state;
-	BOOST boost;
+	BOOST boost, oldBoost;
 
 	bool shouldBeEmpty;
 	bool keepFalling;
@@ -48,7 +48,10 @@ class Tile
 	int getRandType();
 	bool emptyBelowMe();
 	void spriteHandOff(int, int, BOOST);
-
+	Tile::BOOST getBoostType();
+	void setOldBoostType(BOOST);
+	void swapBoosts();
+	
 	void printColor(int);
 	//consts
 	int GRID_SIZE;

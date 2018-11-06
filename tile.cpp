@@ -22,11 +22,11 @@ Tile::Tile()
   //TILE_SWAPPING_SPEED = 10.0;
   TILE_SWAPPING_SPEED = 2.5;
   TILE_FALLING_SPEED = 2.5;
-  //  TILE_SWAPPING_SPEED = 2.5;
 
   state = STATE::IDLE;
   boost = BOOST::NORMAL;
-  
+  oldBoost = BOOST::NORMAL;
+
   this->setMaxSprite(30);
   //toggle to allow tiles to finish 'falling' after bottom place is filled
   this->keepFalling = false;
@@ -47,6 +47,12 @@ void Tile::swapTypes()
   int tmp = this->type;
   this->type = this->swapType;
   this->swapType = tmp;
+}
+void Tile::swapBoosts()
+{
+  BOOST tmp = this->boost;
+  this->boost = this->oldBoost;
+  this->oldBoost = tmp;
 }
 void Tile::swapSpriteCounters()
 {
@@ -314,6 +320,15 @@ bool Tile::isFalling()
   return this->emptyBelowMe();
 }
 
+void Tile::setOldBoostType(BOOST b)
+{
+  this->oldBoost = b;
+}
+Tile::BOOST Tile::getBoostType()
+{
+  return this->boost;
+}
+
 void Tile::printColor(int newType)
 {
   //  printf("top of printColor, this->type: %d\n", this->type);
@@ -444,6 +459,8 @@ void Tile::update()
 		  //set flag to make me empty right after rendering
 		  //I am the new bottom of the col
 		  this->shouldBeEmpty = true;
+		  //reset my boost so it doesn't trigger when I get set to empty later
+		  this->boost = BOOST::NORMAL;
 		}
 	    }
 	}//end of if emptyBelowMe
@@ -482,7 +499,9 @@ void Tile::update()
 	  //tell game to check me for match
 	  this->state = STATE::MATCH;
 	  //swap values of type and swapType, also both spriteCounters
-	  this->swapTypes(); 
+	  this->swapTypes();
+	  //swap boost types
+	  this->swapBoosts();
 	  //reset visual coords
 	  this->setDstX(getDefaultSpriteX());
 	  this->setDstY(getDefaultSpriteY());
@@ -652,21 +671,6 @@ void Tile::update()
   
 }
 
-
-void Tile::displayInfo(const char* str, int x, int y, SDL_Color c)
-{//use schemms Fixed_print.c to print string only
-  
-  char displayString[50];
-
-  strcpy(displayString, str);//player 2 wins
-  FixedPrint(renderer, //sdl_renderer
-             x, //x coord
-             y, //y coord
-             displayString, //text
-             &c, //address of color
-             2); //size: 0, 1, or 2
-}
-
 int Tile::changeState(const char *newState, int arg2, int arg3, int arg4)
 { //fall
   //printf("Tile:: change state to fall on tile (row: %d col:%d)\n", this->row, this->col);
@@ -707,38 +711,45 @@ int Tile::changeState(const char *newState, int arg2) //, int arg3)
 	 2 - go right
 	 3 - go up
 	 4 - go down */
-      // arg3 is the swapee's spriteCounter
+      int row = 0, col = 0;
 
-      //printf("state changed to swap\n");
       this->state = STATE::SWAP;
       this->swappingDirection = arg2;
 
       switch (arg2)
 	{ //what is my new type once I swap?
 	case 1:
-	  this->setSwapType(board[this->row][this->col - 1].getType());
-	  //this->oldSpriteCounter = board[this->row][this->col - 1].getSpriteCounter();
+	  row = this->row;
+	  col = this->col - 1;
+	  
 	  break;
 
 	case 2:
-	  this->setSwapType(board[this->row][this->col + 1].getType());
-	  //this->oldSpriteCounter = board[this->row][this->col + 1].getSpriteCounter();
+	  row = this->row;
+	  col = this->col + 1;
+
 	  break;
 
 	case 3:
-	  this->setSwapType(board[this->row - 1][this->col].getType());
-	  //this->oldSpriteCounter = board[this->row - 1][this->col].getSpriteCounter();
+	  row = this->row - 1;
+	  col = this->col;
+
 	  break;
 
 	case 4:
-	  this->setSwapType(board[this->row + 1][this->col].getType());
-	  //this->oldSpriteCounter = board[this->row + 1][this->col].getSpriteCounter();
+	  row = this->row + 1;
+	  col = this->col;
+
 	  break;
 
 	default:
 	  printf("swap direction invalid: %d\n", arg2);
 	  exit(-1);
 	}
+      //do necessary ops w/ row col
+      this->setSwapType(board[row][col].getType());
+      this->setOldBoostType(board[row][col].getBoostType());
+
     }
     else if (newState == "empty")
     {
@@ -773,12 +784,13 @@ int Tile::changeState(const char *newState)
     {
       //printf("\trow: %d and col: %d - changed to state IDLE\n", this->getRow(), this->getCol());
       this->state = STATE::IDLE;
-      //this->boost = BOOST::NORMAL;
       //reset my visual coords
       this->setDstX(this->getDefaultSpriteX());
       this->setDstY(this->getDefaultSpriteY());
       //reset swap direction
       this->setSwappingDirection(0);
+      //consider setting swapType to type
+      //and oldBoost to boost
     }
   else if (newState == "active")
     {
@@ -833,21 +845,92 @@ int Tile::changeState(const char *newState)
 
 void Tile::triggerBoost()
 {
+  bool above, below, left, right; //bools for bomb
+  above = (this->row - 1) >= 0;
+  below = (this->row + 1) <= 7;
+  left  = (this->col - 1) >= 0;
+  right = (this->col + 1) <= 7;
+  
   switch(this->boost)
     {
     case BOOST::NORMAL: //do nothing
       break;
       
     case BOOST::BOMB: //the 8 surrounding
+      printf("\n\nbomb triggered\n\n");
+      this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+
+      if(above)
+	{
+	  //12:00
+	  board[this->row - 1][this->col].changeState("empty");
+	}
+      if(above and right)
+	{
+	  //1:30
+	  board[this->row - 1][this->col + 1].changeState("empty");
+	}
+      if(right)
+	{
+	  //3:00
+	  board[this->row][this->col + 1].changeState("empty");
+	}
+      if(below and right)
+	{
+	  //4:30
+	  board[this->row + 1][this->col + 1].changeState("empty");
+	}
+      if(below)
+	{
+	  //6:00
+	  board[this->row + 1][this->col].changeState("empty");
+	}
+      if(below and left)
+	{
+	  //7:30
+	  board[this->row + 1][this->col - 1].changeState("empty");
+	}
+      if(left)
+	{
+	  //9:00
+	  board[this->row][this->col - 1].changeState("empty");
+	}
+      if(above and left)
+	{
+	  //10:30
+	  board[this->row - 1][this->col - 1].changeState("empty");
+	}
       break;
       
     case BOOST::ZAP_V: //entire col
+      printf("\n\nvertical zap triggered\n\n");
+      this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+      for(int i = 0; i < 8; i++)
+	{
+	  //clear all tiles in my col
+	  board[i][this->col].changeState("empty");
+	}
       break;
       
     case BOOST::ZAP_H: //entire row
+      printf("\n\nhorizontal zap triggered\n\n");
+      this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+      for(int i = 0; i < 8; i++)
+	{
+	  //clear all tiles in my row
+	  board[this->row][i].changeState("empty");
+	}
       break;
       
     case BOOST::ZAP_B: //entire col and row
+      printf("\n\ncross zap triggered\n\n");
+      this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+      for(int i = 0; i < 8; i++)
+	{
+	  //clear all tiles in my col and row
+	  board[i][this->col].changeState("empty");
+	  board[this->row][i].changeState("empty");
+	}
       break;
     }
 }
@@ -877,5 +960,20 @@ void Tile::changeBoostMode(int b)
       break;
     }
 }
+
+void Tile::displayInfo(const char* str, int x, int y, SDL_Color c)
+{//use schemms Fixed_print.c to print string only
+  
+  char displayString[50];
+
+  strcpy(displayString, str);//player 2 wins
+  FixedPrint(renderer, //sdl_renderer
+             x, //x coord
+             y, //y coord
+             displayString, //text
+             &c, //address of color
+             2); //size: 0, 1, or 2
+}
+
 
 #endif
