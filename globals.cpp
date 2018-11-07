@@ -30,3 +30,19 @@ Tile activeTile;  //used as reference point for which Tile is 'active'
 
 SDL_Texture *gems[6];
 SDL_Texture *empty_gem;
+SDL_Texture *electric, *explosion, *fire, *zap;
+
+int shockSize = 64;
+int explosionSize = 96;
+int electricSize = 64;
+int fireSize = 32;
+
+int shockFrameMax = 8;
+int explosionFrameMax = 12;
+int electricFrameMax = 6;
+int fireFrameMax = 4;
+
+int shockFrameCounter = 0;
+int explosionFrameCounter = 0;
+int electricFrameCounter = 0;
+int fireFrameCounter = 0;

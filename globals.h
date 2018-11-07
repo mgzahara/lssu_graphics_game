@@ -34,5 +34,22 @@ extern Tile activeTile;  //used as reference point for which Tile is 'active'
 
 extern SDL_Texture *gems[6];
 extern SDL_Texture *empty_gem;
+extern SDL_Texture *electric, *explosion, *fire, *zap;
+
+extern int shockSize = 64;
+extern int explosionSize = 96;
+extern int electricSize = 64;
+extern int fireSize = 32;
+
+extern int shockFrameMax = 8;
+extern int explosionFrameMax = 12;
+extern int electricFrameMax = 6;
+extern int fireFrameMax = 4;
+
+extern int shockFrameCounter = 0;
+extern int explosionFrameCounter = 0;
+extern int electricFrameCounter = 0;
+extern int fireFrameCounter = 0;
+
 
 #endif

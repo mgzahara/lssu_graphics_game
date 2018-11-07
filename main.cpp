@@ -165,6 +165,10 @@ void loadTextures()
   gems[4] = loadImage("img/gem5.png");
   gems[5] = loadImage("img/gem6.png");
   empty_gem = loadImage("img/empty_gem.png");
+  electric = loadImage("img/electric_50.png");
+  explosion = loadImage("img/explosion.png");
+  fire = loadImage("img/fireball_50.png");
+  zap = loadImage("img/zap_sheet.png");
 }
 
 SDL_Texture *loadImage(const char *filename)

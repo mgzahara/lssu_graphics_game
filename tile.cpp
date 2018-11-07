@@ -32,10 +32,16 @@ Tile::Tile()
   this->keepFalling = false;
   this->shouldBeEmpty = false;
   this->matchStatus = 0;
+  
+  effectFrameCounter = 0;
+  effectFrameMax = 0;
+  effectSize = 0;
+  effectType = 0;
+  //0 - no effect
+  //1 - fire
+  //2 - electric
 
-  // falling = false;
-  // swapping = false;
-  // active = false;
+  //add info for the Game class to handle match effects
 }
 Tile::~Tile()
 {
@@ -441,11 +447,9 @@ void Tile::update()
 	    {
 	      //my visual is in place for the next Tile to take it
 
-	      //hand off my info
-	      //printf("before calling psriteHandOff()\n\tthis->type: %d\n\tthis->spriteCounter: %d\n\n",
-	      //this->type, this->spriteCounter);
+	      //hand off my info to the tile below me
 	      board[this->row + 1][this->col].spriteHandOff(this->type, this->spriteCounter, this->boost);
-	      
+
 	      if(this->row == -1)
 		{
 		  //this Tile is aboveBoard

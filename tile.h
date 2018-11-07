@@ -41,6 +41,12 @@ class Tile
 	bool keepFalling;
 	
 	int matchStatus;
+
+	int effectFrameCounter;
+	int effectFrameMax;
+	int effectSize;
+	int effectType;
+
 	void setMatchStatus(int);
 	int getMatchStatus();
 	void swapTypes();
