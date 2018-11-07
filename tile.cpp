@@ -542,15 +542,13 @@ void Tile::update()
       if (this->getDstX() == (this->getDefaultSpriteX() - (sign(deltaX) * this->GRID_SIZE)) and
 	  this->getDstY() == (this->getDefaultSpriteY() - (sign(deltaY) * this->GRID_SIZE)))
 	{
-	  /*
-	    if (this->getDstX() == this->getDefaultSpriteX() and
-	    this->getDstY() == this->getDefaultSpriteY())
-	    { */
 
 	  //back to normal
 	  this->state = STATE::IDLE; //resets visual coords
 	  //sprites are visually back to normal, take my original type back
 	  this->setType(this->getSwapType());
+	  //swap boost types
+	  this->swapBoosts();
 	}
 
 
