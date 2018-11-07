@@ -636,8 +636,23 @@ void Tile::update()
       //tile is visible
       SDL_RenderCopy(renderer, gems[this->getType()], &src, &dst);
     }
-  //place any boost visual on top of Tile
-  SDL_Color c; c.r = c.g = c.b = 255;
+
+  //update frame counter of effect
+  effectFrameCounter = (effectFrameCounter + 1) % effectFrameMax;
+  //set src for effect
+  src={
+    effectFrameCounter * effectSize,
+    0,
+    effectSize,
+    effectSize };
+  //set dst for effect
+  dst = {
+    this->getDefaultDstX(),
+    this->getDefaultDstY(),
+    32,
+    32 };
+      
+  //place boost visual on top of Tile
   switch(this->boost)
     {
       //0
@@ -646,22 +661,35 @@ void Tile::update()
       
       //1
     case BOOST::BOMB:
-      displayInfo("B", this->getCol() * 50, this->getRow() * 50, c);
+      //displayInfo("B", this->getCol() * 50, this->getRow() * 50, c);
+      SDL_RenderCopy(renderer, fire, &src, &dst);
       break;
 
       //2
     case BOOST::ZAP_H:
-      displayInfo("ZH", this->getCol() * 50, this->getRow() * 50, c);
+      //displayInfo("ZH", this->getCol() * 50, this->getRow() * 50, c);
+      //set src for effect
+
+
+      SDL_RenderCopy(renderer, electric, &src, &dst);
       break;
 
       //3
-    case BOOST::ZAP_V:
-      displayInfo("ZV", this->getCol() * 50, this->getRow() * 50, c);
+    case BOOST::ZAP_V: // rotate this one 180 deg
+      //displayInfo("ZV", this->getCol() * 50, this->getRow() * 50, c);
+
+      //do rotate here
+      
+      SDL_RenderCopy(renderer, electric, &src, &dst);
       break;
 
       //4
-    case BOOST::ZAP_B:
-      displayInfo("ZB", this->getCol() * 50, this->getRow() * 50, c);
+    case BOOST::ZAP_B: // spin this one
+      //displayInfo("ZB", this->getCol() * 50, this->getRow() * 50, c);
+
+      //do rotate here
+      
+      SDL_RenderCopy(renderer, electric, &src, &dst);
       break;
     }
   
