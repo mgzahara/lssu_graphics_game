@@ -37,7 +37,7 @@ int main(int argc, char **args)
 
   bool done = false;
   int mouse_x = -1, mouse_y = -1;
-
+  
   Game game; //start game stuff
   game.startBoard();
 
@@ -77,6 +77,7 @@ int main(int argc, char **args)
     game.drawHighlightBox();
 
     game.drawPanel();
+
     
     // Update window
     SDL_RenderPresent(renderer);
@@ -165,9 +166,9 @@ void loadTextures()
   gems[4] = loadImage("img/gem5.png");
   gems[5] = loadImage("img/gem6.png");
   empty_gem = loadImage("img/empty_gem.png");
-  electric = loadImage("img/electric_50.png");
+  electric = loadImage("img/electric.png");
   explosion = loadImage("img/explosion.png");
-  fire = loadImage("img/fireball_50.png");
+  fire = loadImage("img/fireball_75.png");
   zap = loadImage("img/zap_sheet.png");
 }
 

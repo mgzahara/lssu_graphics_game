@@ -36,11 +36,7 @@ Tile::Tile()
   effectFrameCounter = 0;
   effectFrameMax = 0;
   effectSize = 0;
-  effectType = 0;
-  //0 - no effect
-  //1 - fire
-  //2 - electric
-
+  //  effectFrameWait = 0; //only update effect every 5 frames
   //add info for the Game class to handle match effects
 }
 Tile::~Tile()
@@ -397,14 +393,32 @@ float Tile::getFallingSpeed()
 void Tile::spriteHandOff(int newType, int newSpriteCounter, BOOST b)
 {
   //accept new sprite
-  //printf("spriteHandOff() to Tile (row: %d col: %d)\n", this->row, this->col);
-  //printf("\treceived a Tile of type %d and color: ", newType);
-  //  fflush(stdout);
-  //printColor(newType);
-  //printf("\n\n");
 
   this->setType(newType); // will reset visual pos
   this->setSpriteCounter(newSpriteCounter);
+
+  switch(b)
+    {
+    case BOOST::NORMAL:
+      this->changeBoostMode(0);
+      break;
+
+    case BOOST::BOMB:
+      this->changeBoostMode(1);
+      break;
+
+    case BOOST::ZAP_H:
+      this->changeBoostMode(2);
+      break;
+
+    case BOOST::ZAP_V:
+      this->changeBoostMode(3);
+      break;
+
+    case BOOST::ZAP_B:
+      this->changeBoostMode(4);
+      break;            
+    }
   this->boost = b;
   
   if(!this->emptyBelowMe())
@@ -440,15 +454,16 @@ void Tile::update()
 	{
 	  //there is an empty Tile below me - fall
 
-	  //inc visual Y pos
+	  //inc visual Y pos of gem and effect
 	  this->setDstY(this->getDstY() + this->getFallingSpeed());
-
+	  
 	  if (this->getDstY() >= (this->getDefaultSpriteY() + this->GRID_SIZE))
 	    {
 	      //my visual is in place for the next Tile to take it
-
 	      //hand off my info to the tile below me
-	      board[this->row + 1][this->col].spriteHandOff(this->type, this->spriteCounter, this->boost);
+	      board[this->row + 1][this->col].spriteHandOff(this->type,
+							    this->spriteCounter,
+							    this->boost);
 
 	      if(this->row == -1)
 		{
@@ -464,7 +479,7 @@ void Tile::update()
 		  //I am the new bottom of the col
 		  this->shouldBeEmpty = true;
 		  //reset my boost so it doesn't trigger when I get set to empty later
-		  this->boost = BOOST::NORMAL;
+		  this->changeBoostMode(0); // set my boost mode to NORMAL
 		}
 	    }
 	}//end of if emptyBelowMe
@@ -638,21 +653,26 @@ void Tile::update()
     }
 
   //update frame counter of effect
-  effectFrameCounter = (effectFrameCounter + 1) % effectFrameMax;
+  //  effectFrameWait = (effectFrameWait + 1) % 5;
+  if(effectFrameMax != 0)
+    {
+      //only update effect frame counter every 5 frames to slow it down
+      effectFrameCounter = (effectFrameCounter + 1) % effectFrameMax;
+    }
+  else
+    {
+      effectFrameCounter = 0;
+    }
   //set src for effect
   src={
     effectFrameCounter * effectSize,
     0,
     effectSize,
     effectSize };
-  //set dst for effect
-  dst = {
-    this->getDefaultDstX(),
-    this->getDefaultDstY(),
-    32,
-    32 };
+
       
   //place boost visual on top of Tile
+  SDL_Color c; c.r = 255; c.g = 255; c.b = 255;
   switch(this->boost)
     {
       //0
@@ -662,6 +682,14 @@ void Tile::update()
       //1
     case BOOST::BOMB:
       //displayInfo("B", this->getCol() * 50, this->getRow() * 50, c);
+
+      //set dst for effect
+      dst = {
+	(int) getDstX(),
+	(int) getDstY(),
+	32,
+	32 };
+
       SDL_RenderCopy(renderer, fire, &src, &dst);
       break;
 
@@ -670,7 +698,13 @@ void Tile::update()
       //displayInfo("ZH", this->getCol() * 50, this->getRow() * 50, c);
       //set src for effect
 
-
+      //set dst for effect
+      dst = {
+	(int) getDstX() - 8,
+	(int) getDstY() - 8,
+	48,
+	48 };
+      
       SDL_RenderCopy(renderer, electric, &src, &dst);
       break;
 
@@ -678,7 +712,15 @@ void Tile::update()
     case BOOST::ZAP_V: // rotate this one 180 deg
       //displayInfo("ZV", this->getCol() * 50, this->getRow() * 50, c);
 
-      //do rotate here
+      //set dst for effect
+      dst = {
+	(int) getDstX() - 8,
+	(int) getDstY() - 8,
+	48,
+	48 };
+
+      
+      //do rotate here - 180
       
       SDL_RenderCopy(renderer, electric, &src, &dst);
       break;
@@ -687,7 +729,14 @@ void Tile::update()
     case BOOST::ZAP_B: // spin this one
       //displayInfo("ZB", this->getCol() * 50, this->getRow() * 50, c);
 
-      //do rotate here
+      //set dst for effect
+      dst = {
+	(int) getDstX() - 8,
+	(int) getDstY() - 8,
+	48,
+	48 };
+
+      //do rotate here - 1 deg / frame
       
       SDL_RenderCopy(renderer, electric, &src, &dst);
       break;
@@ -971,22 +1020,37 @@ void Tile::changeBoostMode(int b)
     {
     case 0:
       this->boost = BOOST::NORMAL;
+      this->effectFrameMax = 0;
+      this->effectSize = 0;
+      
       break;
 
     case 1:
       this->boost = BOOST::BOMB;
+      this->effectFrameMax = 4;
+      this->effectSize = 32;
+      
       break;
 
     case 2:
       this->boost = BOOST::ZAP_H;
+      this->effectFrameMax = 6;
+      this->effectSize = 64;
+	    
       break;
 
     case 3:
       this->boost = BOOST::ZAP_V;
+      this->effectFrameMax = 6;
+      this->effectSize = 64;
+	    
       break;
 
     case 4:
       this->boost = BOOST::ZAP_B;
+      this->effectFrameMax = 6;
+      this->effectSize = 64;
+	    
       break;
     }
 }

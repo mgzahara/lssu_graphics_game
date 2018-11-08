@@ -33,7 +33,7 @@ class Tile
 	//visual coords of sprite
 	float spriteDstX;
 	float spriteDstY;
-	
+
 	STATE state;
 	BOOST boost, oldBoost;
 
@@ -45,7 +45,7 @@ class Tile
 	int effectFrameCounter;
 	int effectFrameMax;
 	int effectSize;
-	int effectType;
+	int effectFrameWait;
 
 	void setMatchStatus(int);
 	int getMatchStatus();
