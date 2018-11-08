@@ -14,6 +14,11 @@ private:
   void displayInfo(const char*, int, int, int, SDL_Color);
   void displayInfo(const char*, int, int, SDL_Color);
   bool shuffleClick(int, int);
+  int scoreMultiplier; // inc w/each match
+  const int scoreConst = 25; // how much the score increases by for each match
+  const int baseScore3 = 100; // each match is worth <= baseScore
+  const int baseScore4 = 150;
+  const int baseScore5 = 200;
   
 public:
   Game();

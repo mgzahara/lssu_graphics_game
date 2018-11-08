@@ -46,3 +46,5 @@ int shockFrameCounter = 0;
 int explosionFrameCounter = 0;
 int electricFrameCounter = 0;
 int fireFrameCounter = 0;
+
+int score = 0;

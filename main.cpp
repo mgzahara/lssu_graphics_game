@@ -69,15 +69,11 @@ int main(int argc, char **args)
 
     game.updateBoard();
 
-    //TS
-    //SDL_Delay(500);
-    
     game.checkForMatches();
 
     game.drawHighlightBox();
 
     game.drawPanel();
-
     
     // Update window
     SDL_RenderPresent(renderer);

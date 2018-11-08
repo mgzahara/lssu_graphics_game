@@ -14,6 +14,8 @@ Game::Game()
   activeTile.setRow(-10);
   activeTile.setCol(-10);
   activeTile.setType(-1);
+
+  scoreMultiplier = 0; //number of matches in current 'run'
 }
 Game::~Game()
 {
@@ -175,6 +177,25 @@ void Game::updateBoard()
     {
       aboveBoard[i].update();
     }
+
+  //if no tiles are busy, reset match multiplier
+        bool flag = true;
+      for(int i = 0; i < 7; i++)
+	{
+	  for(int j = 0; j < 7; j++)
+	    {
+	      if(!board[i][j].isNotBusy())
+		{
+		  //this tile IS busy
+		  flag = false;
+		}
+	    }
+	}
+      if(flag)
+	{
+	  //no tiles are busy - no possible matches to multiply
+	  scoreMultiplier = 0;
+	}
 }
 
 void Game::checkForMatches()
@@ -424,7 +445,7 @@ void Game::match(Tile curr)
   char *matchString;
   bool shouldPaws, tileIsSwapping;
   int swapeeRow, swapeeCol, boostMode = 0;
-
+  
   // decide up front if this tile is a swapping check or a falling check
   tileIsSwapping = (board[curr.getRow()][curr.getCol()].getSwappingDirection() != 0) ? true : false;
 
@@ -487,6 +508,27 @@ void Game::match(Tile curr)
 	  boostMode = 3;
 	}
 
+      //add to score based on boostMode
+      switch(boostMode)
+	{
+	case 0: //regular 3 in a row
+	  score += (scoreConst * scoreMultiplier) + baseScore3;
+	  break;
+
+	case 1: //4 in a row
+	  score += (scoreConst * scoreMultiplier) + baseScore4;
+	  break;
+
+	case 2: //5 in a match of some sort
+	case 3:
+	case 4:
+	  score += (scoreConst * scoreMultiplier) + baseScore5;
+	  break;
+	}
+
+      //now that the sore is updated, inc score multiplier
+      scoreMultiplier++;
+      
       if (tileIsSwapping)
 	{
 	  board[curr.getRow()][curr.getCol()].setMatchStatus(1); //mark that I have made a match
@@ -618,7 +660,7 @@ void Game::drawPanel()
   textColor.r = textColor.g = textColor.b = 0;
   this->displayInfo("Shuffle", 490, 292, textColor);
   this->displayInfo("Score:", 485, 68, textColor);
-  this->displayInfo("12345678", 485, 95, textColor);
+  this->displayInfo("", score, 485, 95, textColor);
   
 }
 

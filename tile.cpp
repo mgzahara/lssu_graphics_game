@@ -943,41 +943,49 @@ void Tile::triggerBoost()
 	{
 	  //12:00
 	  board[this->row - 1][this->col].changeState("empty");
+	  score += 25;
 	}
       if(above and right)
 	{
 	  //1:30
 	  board[this->row - 1][this->col + 1].changeState("empty");
+	  score += 25;
 	}
       if(right)
 	{
 	  //3:00
 	  board[this->row][this->col + 1].changeState("empty");
+	  score += 25;
 	}
       if(below and right)
 	{
 	  //4:30
 	  board[this->row + 1][this->col + 1].changeState("empty");
+	  score += 25;
 	}
       if(below)
 	{
 	  //6:00
 	  board[this->row + 1][this->col].changeState("empty");
+	  score += 25;
 	}
       if(below and left)
 	{
 	  //7:30
 	  board[this->row + 1][this->col - 1].changeState("empty");
+	  score += 25;
 	}
       if(left)
 	{
 	  //9:00
 	  board[this->row][this->col - 1].changeState("empty");
+	  score += 25;
 	}
       if(above and left)
 	{
 	  //10:30
 	  board[this->row - 1][this->col - 1].changeState("empty");
+	  score += 25;
 	}
       break;
       
@@ -988,6 +996,7 @@ void Tile::triggerBoost()
 	{
 	  //clear all tiles in my col
 	  board[i][this->col].changeState("empty");
+	  score += 25;
 	}
       break;
       
@@ -998,6 +1007,7 @@ void Tile::triggerBoost()
 	{
 	  //clear all tiles in my row
 	  board[this->row][i].changeState("empty");
+	  score += 25;
 	}
       break;
       
@@ -1009,6 +1019,7 @@ void Tile::triggerBoost()
 	  //clear all tiles in my col and row
 	  board[i][this->col].changeState("empty");
 	  board[this->row][i].changeState("empty");
+	  score += 25;
 	}
       break;
     }

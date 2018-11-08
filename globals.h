@@ -51,5 +51,6 @@ extern int explosionFrameCounter;
 extern int electricFrameCounter;
 extern int fireFrameCounter;
 
+extern int score;
 
 #endif
