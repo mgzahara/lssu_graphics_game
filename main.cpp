@@ -58,6 +58,19 @@ int main(int argc, char **args)
         { //grab mouse position on left click
           SDL_GetMouseState(&mouse_x, &mouse_y);
         }
+	else if(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT))
+	  {
+	    //for testing purposes only - remove Tile on right click
+	    SDL_GetMouseState(&mouse_x, &mouse_y);
+	    int clickRow = mouse_y / GRID_SIZE;
+	    int clickCol = mouse_x / GRID_SIZE;
+
+	    if (game.validLeftMouseClick(mouse_x, mouse_y)
+		and board[clickRow][clickCol].isNotBusy())
+	      {
+		board[clickRow][clickCol].changeState("empty");
+	      }
+	  }
         break;
       }
     }

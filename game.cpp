@@ -670,7 +670,7 @@ void Game::displayInfo(const char* str, int val, int x, int y, SDL_Color c)
 {//use schemms Fixed_print.c to print string and int
   
   char displayString[50];
-  char intString[5];
+  char intString[20];
 
   strcpy(displayString, str);//player 2 wins
   
@@ -688,7 +688,7 @@ void Game::displayInfo(const char* str, float val, int x, int y, SDL_Color c)
 {//use schemms Fixed_print.c to print string and float
   
   char displayString[50];
-  char floatString[10];
+  char floatString[20];
 
   strcpy(displayString, str);//player 2 wins
   

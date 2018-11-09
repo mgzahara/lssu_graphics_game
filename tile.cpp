@@ -36,7 +36,8 @@ Tile::Tile()
   effectFrameCounter = 0;
   effectFrameMax = 0;
   effectSize = 0;
-  //  effectFrameWait = 0; //only update effect every 5 frames
+  effectFrameWait = 0; //only update effect every 5 frames
+  effectFrameAngle = 0;
   //add info for the Game class to handle match effects
 }
 Tile::~Tile()
@@ -653,15 +654,20 @@ void Tile::update()
     }
 
   //update frame counter of effect
-  //  effectFrameWait = (effectFrameWait + 1) % 5;
-  if(effectFrameMax != 0)
+  effectFrameWait = (effectFrameWait + 1) % 5;
+  effectFrameAngle = (effectFrameAngle + 1) % 360;
+  if(effectFrameWait == 0)
     {
-      //only update effect frame counter every 5 frames to slow it down
-      effectFrameCounter = (effectFrameCounter + 1) % effectFrameMax;
-    }
-  else
-    {
-      effectFrameCounter = 0;
+      //delay tile effects to only every 5 frames
+      if(effectFrameMax != 0)
+	{
+	  //only update effect frame counter every 5 frames to slow it down
+	  effectFrameCounter = (effectFrameCounter + 1) % effectFrameMax;
+	}
+      else
+	{
+	  effectFrameCounter = 0;
+	}
     }
   //set src for effect
   src={
@@ -673,6 +679,9 @@ void Tile::update()
       
   //place boost visual on top of Tile
   SDL_Color c; c.r = 255; c.g = 255; c.b = 255;
+  SDL_Point p = {24, 24};//point of rotation
+  SDL_RendererFlip flip = SDL_FLIP_NONE;//dont flip, just rotate
+
   switch(this->boost)
     {
       //0
@@ -721,8 +730,8 @@ void Tile::update()
 
       
       //do rotate here - 180
-      
-      SDL_RenderCopy(renderer, electric, &src, &dst);
+       SDL_RenderCopyEx(renderer, electric, &src, &dst, (double) 180, &p, flip);     
+      //SDL_RenderCopy(renderer, electric, &src, &dst);
       break;
 
       //4
@@ -736,9 +745,11 @@ void Tile::update()
 	48,
 	48 };
 
-      //do rotate here - 1 deg / frame
-      
-      SDL_RenderCopy(renderer, electric, &src, &dst);
+      //do rotate here - 5 deg / frame
+      SDL_RenderCopyEx(renderer, electric, &src, &dst,
+		       (double) effectFrameAngle, &p, flip);
+       
+      //SDL_RenderCopy(renderer, electric, &src, &dst);
       break;
     }
   
@@ -936,7 +947,7 @@ void Tile::triggerBoost()
       break;
       
     case BOOST::BOMB: //the 8 surrounding
-      printf("\n\nbomb triggered\n\n");
+      //printf("\n\nbomb triggered\n\n");
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
 
       if(above)
@@ -990,7 +1001,7 @@ void Tile::triggerBoost()
       break;
       
     case BOOST::ZAP_V: //entire col
-      printf("\n\nvertical zap triggered\n\n");
+      //printf("\n\nvertical zap triggered\n\n");
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
       for(int i = 0; i < 8; i++)
 	{
@@ -1001,7 +1012,7 @@ void Tile::triggerBoost()
       break;
       
     case BOOST::ZAP_H: //entire row
-      printf("\n\nhorizontal zap triggered\n\n");
+      //printf("\n\nhorizontal zap triggered\n\n");
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
       for(int i = 0; i < 8; i++)
 	{
@@ -1012,7 +1023,7 @@ void Tile::triggerBoost()
       break;
       
     case BOOST::ZAP_B: //entire col and row
-      printf("\n\ncross zap triggered\n\n");
+      //printf("\n\ncross zap triggered\n\n");
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
       for(int i = 0; i < 8; i++)
 	{

@@ -6,7 +6,7 @@
 class Game
 {
 private:
-  bool validLeftMouseClick(int, int);
+
   bool shouldSwapTiles(int, int);
   char *matchCheck(Tile);
   void match(Tile);
@@ -30,6 +30,7 @@ public:
   void updateBoard();
   void checkForMatches();
   void drawPanel();
+  bool validLeftMouseClick(int, int);
 };
 
 #endif

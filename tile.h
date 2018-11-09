@@ -46,6 +46,7 @@ class Tile
 	int effectFrameMax;
 	int effectSize;
 	int effectFrameWait;
+	int effectFrameAngle;
 
 	void setMatchStatus(int);
 	int getMatchStatus();
