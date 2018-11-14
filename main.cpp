@@ -8,6 +8,7 @@
 
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_mixer.h"
 #include "iostream"
 #include "string"
 #include "globals.h"
@@ -25,6 +26,7 @@ void displayInfo(const char*, float, int, int, SDL_Color);//string + float
 void displayInfo(const char*, int, int, SDL_Color);//string
 
 void loadTextures();
+void loadSounds();
 SDL_Texture *loadImage(const char *);
 
 int main(int argc, char **args)
@@ -162,6 +164,26 @@ void quitSDL()
   // Quit - memory clean up
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
+  
+  //Free the sound effects
+  Mix_FreeChunk( zapSound );
+  Mix_FreeChunk( bombSound );
+  Mix_FreeChunk( matchSound );
+
+  //free textures
+  SDL_DestroyTexture(gems[0]);
+  SDL_DestroyTexture(gems[1]);
+  SDL_DestroyTexture(gems[2]);
+  SDL_DestroyTexture(gems[3]);
+  SDL_DestroyTexture(gems[4]);
+  SDL_DestroyTexture(gems[5]);
+  SDL_DestroyTexture(empty_gem);
+  SDL_DestroyTexture(electric);
+  SDL_DestroyTexture(explosion);
+  SDL_DestroyTexture(fire);
+  SDL_DestroyTexture(zap);
+  SDL_DestroyTexture(background);
+  
   SDL_Quit();
 }
 
@@ -210,12 +232,20 @@ bool initSDL()
       return false;
     }
 
-  loadTextures();
+  //Initialize SDL_mixer
+  if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 )
+    {
+      return false;
+    }
 
+  loadTextures();
+  
+  loadSounds();
+  
   //black out the screen
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
-
+  
   //init text to screen
   FixedPrint_Setup();
 
@@ -238,7 +268,26 @@ void loadTextures()
   zap = loadImage("img/zap_sheet.png");
   background = loadImage("img/background.png");
 }
+void loadSounds()
+{
+    //Load the sound effects
+    zapSound = Mix_LoadWAV(
+	     "sounds/136542__joelaudio__electric-zap-001.wav");
+    bombSound = Mix_LoadWAV(
+	     "sounds/366093__benjaminharveydesign__manhole-blows-metallic-boom.wav");
+    matchSound = Mix_LoadWAV(
+	     "sounds/346404__robinhood76__06698-gem-collect-ding.wav");
 
+    //If there was a problem loading the sound effects
+    if( zapSound == NULL or
+	bombSound == NULL or
+	matchSound == NULL )
+    {
+      //printf("problem loading sounds\n%d %d %d\n\n",
+      //     zapSound, bombSound, matchSound);
+      exit(-1);
+    }
+}
 SDL_Texture *loadImage(const char *filename)
 {
   SDL_Texture *texture;

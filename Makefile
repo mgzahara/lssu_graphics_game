@@ -14,7 +14,7 @@ CFLAGS =  $(shell sdl2-config --cflags)  -O2
 #LIBS =  $(shell sdl2-config --libs) -lm
 
 #this line threw err because of -lSDL2_image could not be found
-LIBS = -lSDL2_image $(shell sdl2-config --libs) -lm
+LIBS = -lSDL2_image $(shell sdl2-config --libs) -lm -lSDL2_mixer
 
 #LINKER_FLAGS specifies the libraries we're linking against
 LINKER_FLAGS = -lSDL2

@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "SDL.h"
+#include "SDL_mixer.h"
 #include "tile.h"
 #include "iostream"
 
@@ -51,3 +52,11 @@ int electricFrameCounter = 0;
 int fireFrameCounter = 0;
 
 int score = 0;
+
+//The music that will be played
+//Mix_Music *music = NULL;
+
+//The sound effects that will be used
+Mix_Chunk *zapSound = NULL;
+Mix_Chunk *bombSound = NULL;
+Mix_Chunk *matchSound = NULL;

@@ -1,0 +1,11 @@
+zap sound (136542__joelaudio__electric-zap-001.wav)
+was downloaded from freesound.org from the user JoelAudio and is licensed under
+CC0 1.0
+
+boom sound (366093__benjaminharveydesign__manhole-blows-metallic-boom.wav)
+was donwloaded from freesound.org from the user benjaminharveydesign, conveted
+to wav format and is licensed under CC0 1.0
+
+gem sound (346404__robinhood76__06698-gem-collect-ding.wav)
+was downloaded from freesound.org from the user Robinhood76 and is licensed 
+under CC BY-NC 3.0

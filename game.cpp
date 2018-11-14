@@ -1,6 +1,7 @@
 #include "game.h"
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_mixer.h"
 #include "iostream"
 #include "globals.h"
 #include "tile.h"
@@ -17,6 +18,7 @@ Game::Game()
   activeTile.setType(-1);
 
   scoreMultiplier = 0; //number of matches in current 'run'
+  matchMade = false;
 }
 Game::~Game()
 {
@@ -222,6 +224,15 @@ void Game::checkForMatches()
 	    {
 	      match(board[i][j]);
 	    }
+	}
+    }
+  if(matchMade)
+    {
+      matchMade = false;
+      //play match sound
+      if( Mix_PlayChannel( -1, matchSound, 0 ) == -1 )
+	{
+	  exit(-1);
 	}
     }
 }
@@ -487,6 +498,8 @@ void Game::match(Tile curr)
   if (((left + right) >= 2) or ((above + below) >= 2))
     { //a match was made - update my match status and check my swapee's status
 
+      matchMade = true; //flip the switch to play match sound
+      
       //special check      
       if(((left + right) >= 2) and ((above + below) >= 2))
 	{

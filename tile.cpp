@@ -2,6 +2,7 @@
 #include "iostream"
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_mixer.h"
 #include "globals.h"
 #include "tile.h"
 #include "Fixed_print.h"
@@ -948,7 +949,12 @@ void Tile::triggerBoost()
       break;
       
     case BOOST::BOMB: //the 8 surrounding
-      //printf("\n\nbomb triggered\n\n");
+      //play sound
+      if( Mix_PlayChannel( -1, bombSound, 0 ) == -1 )
+	{
+	  exit(-1);
+	}
+      
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
 
       effects[this->row][this->col].startEffect(1);
@@ -1004,7 +1010,13 @@ void Tile::triggerBoost()
       break;
       
     case BOOST::ZAP_V: //entire col
-      //printf("\n\nvertical zap triggered\n\n");
+
+      //play sound
+      if( Mix_PlayChannel( -1, zapSound, 0 ) == -1 )
+	{
+	  exit(-1);
+	}
+      
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
       for(int i = 0; i < 8; i++)
 	{
@@ -1016,7 +1028,13 @@ void Tile::triggerBoost()
       break;
       
     case BOOST::ZAP_H: //entire row
-      //printf("\n\nhorizontal zap triggered\n\n");
+
+      //play sound
+      if( Mix_PlayChannel( -1, zapSound, 0 ) == -1 )
+	{
+	  exit(-1);
+	}
+      
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
       for(int i = 0; i < 8; i++)
 	{
@@ -1028,7 +1046,13 @@ void Tile::triggerBoost()
       break;
       
     case BOOST::ZAP_B: //entire col and row
-      //printf("\n\ncross zap triggered\n\n");
+
+      //play sound
+      if( Mix_PlayChannel( -1, zapSound, 0 ) == -1 )
+	{
+	  exit(-1);
+	}
+
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
 
       for(int i = 0; i < 8; i++)

@@ -7,6 +7,7 @@
 #include "tile.h"
 #include "game.h"
 #include "effect.h"
+#include "SDL_mixer.h"
 
 using namespace std;
 
@@ -56,5 +57,13 @@ extern int electricFrameCounter;
 extern int fireFrameCounter;
 
 extern int score;
+
+//The music that will be played
+//extern Mix_Music *music = NULL;
+
+//The sound effects that will be used
+extern Mix_Chunk *zapSound;
+extern Mix_Chunk *bombSound;
+extern Mix_Chunk *matchSound;
 
 #endif
