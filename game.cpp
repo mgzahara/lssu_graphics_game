@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "tile.h"
 #include "Fixed_print.h"
+#include "effect.h"
 
 
 Game::Game()
@@ -90,6 +91,9 @@ void Game::startBoard()
       for (int j = 0; j < BOARD_SIZE; j++)
 	{ //col
 
+	  effects[i][j].setRow(i);
+	  effects[i][j].setCol(j);
+	  
 	  //set matchBoard[][] defaults while we're here
 	  // matchBoard[i][j] = false;
 
@@ -179,23 +183,32 @@ void Game::updateBoard()
     }
 
   //if no tiles are busy, reset match multiplier
-        bool flag = true;
-      for(int i = 0; i < 7; i++)
+  bool flag = true;
+  for(int i = 0; i < 8; i++)
+    {
+      for(int j = 0; j < 8; j++)
 	{
-	  for(int j = 0; j < 7; j++)
+	  if(!board[i][j].isNotBusy())
 	    {
-	      if(!board[i][j].isNotBusy())
-		{
-		  //this tile IS busy
-		  flag = false;
-		}
+	      //this tile IS busy
+	      flag = false;
 	    }
 	}
-      if(flag)
+    }
+  if(flag)
+    {
+      //no tiles are busy - no possible matches to multiply
+      scoreMultiplier = 0;
+    }
+
+  //update all visuals for effects
+  for(int i = 0; i < 8; i++)
+    {
+      for(int j = 0; j < 8; j++)
 	{
-	  //no tiles are busy - no possible matches to multiply
-	  scoreMultiplier = 0;
+	  effects[i][j].update();
 	}
+    }
 }
 
 void Game::checkForMatches()
@@ -287,25 +300,13 @@ char *Game::matchCheck(Tile currTile)
 
 void Game::drawBoard()
 {
-  //black background
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  SDL_RenderClear(renderer);
+  static SDL_Rect src = {
+    0, 0, 640, 480 };
+  static SDL_Rect dst = {
+    0, 0, 640, 480 };
+  SDL_RenderCopy(renderer, background, &src, &dst);
 
-  //do we need a grid?
   return;
-  
-  //draw a grid in maroon
-  SDL_SetRenderDrawColor(renderer, 128, 0, 0, 255);
-  for (int i = 1; i <= (WINDOW_WIDTH / GRID_SIZE); i++)
-    {
-      //draw vertical lines
-      SDL_RenderDrawLine(renderer, i * GRID_SIZE, 0, i * GRID_SIZE, WINDOW_HEIGHT);
-    }
-  for (int i = 1; i <= (WINDOW_HEIGHT / GRID_SIZE); i++)
-    {
-      //draw horizontal lines
-      SDL_RenderDrawLine(renderer, 0, i * GRID_SIZE, WINDOW_WIDTH, i * GRID_SIZE);
-    }
 }
 
 void Game::handleLeftMouseClick(int mouse_x, int mouse_y)

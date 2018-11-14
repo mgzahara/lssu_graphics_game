@@ -236,6 +236,7 @@ void loadTextures()
   explosion = loadImage("img/explosion.png");
   fire = loadImage("img/fireball_75.png");
   zap = loadImage("img/zap_sheet.png");
+  background = loadImage("img/background.png");
 }
 
 SDL_Texture *loadImage(const char *filename)

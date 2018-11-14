@@ -6,6 +6,7 @@
 #include "time.h"
 #include "tile.h"
 #include "game.h"
+#include "effect.h"
 
 using namespace std;
 
@@ -35,6 +36,9 @@ extern Tile activeTile;  //used as reference point for which Tile is 'active'
 extern SDL_Texture *gems[6];
 extern SDL_Texture *empty_gem;
 extern SDL_Texture *electric, *explosion, *fire, *zap;
+extern SDL_Texture *background;
+
+extern Effect effects[8][8];
 
 extern int shockSize;
 extern int explosionSize;

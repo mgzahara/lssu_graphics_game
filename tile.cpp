@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "tile.h"
 #include "Fixed_print.h"
+#include "effect.h"
 
 #ifndef TILE_CPP
 #define TILE_CPP
@@ -950,6 +951,8 @@ void Tile::triggerBoost()
       //printf("\n\nbomb triggered\n\n");
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
 
+      effects[this->row][this->col].startEffect(1);
+      
       if(above)
 	{
 	  //12:00
@@ -1007,6 +1010,7 @@ void Tile::triggerBoost()
 	{
 	  //clear all tiles in my col
 	  board[i][this->col].changeState("empty");
+	  effects[i][this->col].startEffect(3);
 	  score += 25;
 	}
       break;
@@ -1018,6 +1022,7 @@ void Tile::triggerBoost()
 	{
 	  //clear all tiles in my row
 	  board[this->row][i].changeState("empty");
+	  effects[this->row][i].startEffect(2);
 	  score += 25;
 	}
       break;
@@ -1025,13 +1030,17 @@ void Tile::triggerBoost()
     case BOOST::ZAP_B: //entire col and row
       //printf("\n\ncross zap triggered\n\n");
       this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+
       for(int i = 0; i < 8; i++)
 	{
 	  //clear all tiles in my col and row
 	  board[i][this->col].changeState("empty");
+	  effects[i][this->col].startEffect(3);
 	  board[this->row][i].changeState("empty");
+	  effects[this->row][i].startEffect(2);
 	  score += 25;
 	}
+      effects[this->row][this->col].startEffect(4);
       break;
     }
 }

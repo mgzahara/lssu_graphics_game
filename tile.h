@@ -148,4 +148,5 @@ class Tile
 	void changeBoostMode(int);
 	void triggerBoost();
 };
+
 #endif
