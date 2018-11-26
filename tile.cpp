@@ -629,7 +629,7 @@ void Tile::update()
     case STATE::MATCH:
 
       //shouldnt even get here - Game should change it before update gets called again
-      printf("my state is match... it probably shouldn't be\n");
+      //printf("my state is match... it probably shouldn't be\n");
       break;
 
     default:
