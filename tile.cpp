@@ -56,7 +56,29 @@ void Tile::swapTypes()
 void Tile::swapBoosts()
 {
   BOOST tmp = this->boost;
-  this->boost = this->oldBoost;
+  switch(this->oldBoost)
+    { //be sure to assign other var when switching to another boost type
+      case BOOST::NORMAL:
+      this->changeBoostMode(0);
+      break;
+
+    case BOOST::BOMB:
+    this->changeBoostMode(1);
+      break;
+
+    case BOOST::ZAP_H:
+    this->changeBoostMode(2);
+      break;
+
+    case BOOST::ZAP_V:
+    this->changeBoostMode(3);
+      break;
+
+    case BOOST::ZAP_B:
+    this->changeBoostMode(4);
+      break;
+    }
+  //this->boost = this->oldBoost;
   this->oldBoost = tmp;
 }
 void Tile::swapSpriteCounters()
@@ -422,7 +444,6 @@ void Tile::spriteHandOff(int newType, int newSpriteCounter, BOOST b)
       this->changeBoostMode(4);
       break;            
     }
-  this->boost = b;
   
   if(!this->emptyBelowMe())
     {
@@ -954,8 +975,8 @@ void Tile::triggerBoost()
 	{
 	  exit(-1);
 	}
-      
-      this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+      this->changeBoostMode(0);//reset my boost to prevent an infinite loop
+      //this->boost = BOOST::NORMAL;
 
       effects[this->row][this->col].startEffect(1);
       
@@ -1016,8 +1037,8 @@ void Tile::triggerBoost()
 	{
 	  exit(-1);
 	}
-      
-      this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+      this->changeBoostMode(0);//reset my boost to prevent an infinite loop
+      //this->boost = BOOST::NORMAL;
       for(int i = 0; i < 8; i++)
 	{
 	  //clear all tiles in my col
@@ -1034,8 +1055,8 @@ void Tile::triggerBoost()
 	{
 	  exit(-1);
 	}
-      
-      this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+      this->changeBoostMode(0);//reset my boost to prevent an infinite loop
+      //this->boost = BOOST::NORMAL;
       for(int i = 0; i < 8; i++)
 	{
 	  //clear all tiles in my row
@@ -1052,8 +1073,8 @@ void Tile::triggerBoost()
 	{
 	  exit(-1);
 	}
-
-      this->boost = BOOST::NORMAL;//reset my boost to prevent an infinite loop
+      this->changeBoostMode(0);//reset my boost to prevent an infinite loop
+      //this->boost = BOOST::NORMAL;
 
       for(int i = 0; i < 8; i++)
 	{
