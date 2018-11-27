@@ -615,6 +615,7 @@ void Tile::update()
       break;
 
     case STATE::FALL:
+      printf("i am in state FALL\nrow: %d \t col: %d\n\n", this->getRow(), this->getCol());
       
       //printf("tile (row: %d col: %d) is in FALL\n", this->row, this->col);
       //be sure that each falling sprite is at 0
@@ -973,6 +974,7 @@ void Tile::triggerBoost()
       //play sound
       if( Mix_PlayChannel( -1, bombSound, 0 ) == -1 )
 	{
+    printf("\n\nbomb sound err\n");
 	  exit(-1);
 	}
       this->changeBoostMode(0);//reset my boost to prevent an infinite loop
