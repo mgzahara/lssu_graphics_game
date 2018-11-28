@@ -60,3 +60,4 @@ int score = 0;
 Mix_Chunk *zapSound = NULL;
 Mix_Chunk *bombSound = NULL;
 Mix_Chunk *matchSound = NULL;
+Mix_Chunk *shuffleSound = NULL;

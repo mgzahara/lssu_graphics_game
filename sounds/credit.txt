@@ -9,3 +9,7 @@ to wav format and is licensed under CC0 1.0
 gem sound (346404__robinhood76__06698-gem-collect-ding.wav)
 was downloaded from freesound.org from the user Robinhood76 and is licensed 
 under CC BY-NC 3.0
+
+computer beep sound (sampled from 153583__sheepfilms__8-bit-beeping-computer-sounds.wav)
+was downloaded from freesound.org from the user sheepfilms and is licensed under
+CC0 1.0

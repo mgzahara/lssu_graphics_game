@@ -65,5 +65,6 @@ extern int score;
 extern Mix_Chunk *zapSound;
 extern Mix_Chunk *bombSound;
 extern Mix_Chunk *matchSound;
+extern Mix_Chunk *shuffleSound;
 
 #endif

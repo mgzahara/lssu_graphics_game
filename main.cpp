@@ -277,14 +277,16 @@ void loadSounds()
 	     "sounds/366093__benjaminharveydesign__manhole-blows-metallic-boom.wav");
     matchSound = Mix_LoadWAV(
 	     "sounds/346404__robinhood76__06698-gem-collect-ding.wav");
-
+    shuffleSound = Mix_LoadWAV(
+	     "sounds/153583__sheepfilms__8-bit-beeping-computer-sounds-edit.wav");
+    
     //If there was a problem loading the sound effects
     if( zapSound == NULL or
 	bombSound == NULL or
-	matchSound == NULL )
+	matchSound == NULL or
+	shuffleSound == NULL)
     {
-      //printf("problem loading sounds\n%d %d %d\n\n",
-      //     zapSound, bombSound, matchSound);
+      printf("error loading sounds\n");
       exit(-1);
     }
 }

@@ -35,6 +35,7 @@ Tile::Tile()
   this->shouldBeEmpty = false;
   this->matchStatus = 0;
 
+  justMadeBoost = false;
   effectFrameCounter = 0;
   effectFrameMax = 0;
   effectSize = 0;
@@ -477,8 +478,10 @@ void Tile::update()
       this->setDstY(this->getDstY() + this->getFallingSpeed());
 
       if (this->getDstY() >= (this->getDefaultSpriteY() + this->GRID_SIZE) or
-          (this->boost != BOOST::NORMAL and (this->getDstY() >= (this->getDefaultSpriteY() + this->GRID_SIZE - 2))))
+          (this->boost != BOOST::NORMAL and this->justMadeBoost and
+	   (this->getDstY() >= (this->getDefaultSpriteY() + this->GRID_SIZE - 2))))
       {
+	this->justMadeBoost = false;
         //my visual is in place for the next Tile to take it
         //hand off my info to the tile below me
         board[this->row + 1][this->col]
@@ -874,6 +877,7 @@ int Tile::changeState(const char *newState, int arg2) //, int arg3)
     else
     {
       //I am now a special Tile
+      this->justMadeBoost = true;
       this->changeBoostMode(arg2);
     }
   }

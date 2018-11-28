@@ -39,6 +39,7 @@ class Tile
 
 	bool shouldBeEmpty;
 	bool keepFalling;
+	bool justMadeBoost;
 	
 	int matchStatus;
 
