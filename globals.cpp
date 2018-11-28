@@ -18,10 +18,6 @@ const int GRID_SIZE = 50; //size of one square on board
 const int BOX_SIZE = 3;   //thickness of highlight box
 const int GEM_SIZE = 32;  //size of gem sprites
 
-//parallel with board 2d array
-//indicates which Tiles need to be checked for matches
-// bool matchBoard[8][8];
-
 int box_x = -200; //location for activeTile highlighting
 int box_y = -200; //location for activeTile highlighting
 

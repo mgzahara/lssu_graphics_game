@@ -1,11 +1,3 @@
-/* TODO
- *
- * Swap doesn't preserve boosts
- * Points
- * Time Limit
- *
- */
-
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
@@ -134,7 +126,6 @@ int main(int argc, char **args)
 	    }
 	}
 
-      //draw board grid - is a grid necessary?
       game.drawBoard();
 
       game.handleLeftMouseClick(mouse_x, mouse_y);
@@ -270,21 +261,21 @@ void loadTextures()
 }
 void loadSounds()
 {
-    //Load the sound effects
-    zapSound = Mix_LoadWAV(
-	     "sounds/136542__joelaudio__electric-zap-001.wav");
-    bombSound = Mix_LoadWAV(
-	     "sounds/366093__benjaminharveydesign__manhole-blows-metallic-boom.wav");
-    matchSound = Mix_LoadWAV(
-	     "sounds/346404__robinhood76__06698-gem-collect-ding.wav");
-    shuffleSound = Mix_LoadWAV(
-	     "sounds/153583__sheepfilms__8-bit-beeping-computer-sounds-edit.wav");
+  //Load the sound effects
+  zapSound = Mix_LoadWAV(
+			 "sounds/136542__joelaudio__electric-zap-001.wav");
+  bombSound = Mix_LoadWAV(
+			  "sounds/366093__benjaminharveydesign__manhole-blows-metallic-boom.wav");
+  matchSound = Mix_LoadWAV(
+			   "sounds/346404__robinhood76__06698-gem-collect-ding.wav");
+  shuffleSound = Mix_LoadWAV(
+			     "sounds/153583__sheepfilms__8-bit-beeping-computer-sounds-edit.wav");
     
-    //If there was a problem loading the sound effects
-    if( zapSound == NULL or
-	bombSound == NULL or
-	matchSound == NULL or
-	shuffleSound == NULL)
+  //If there was a problem loading the sound effects
+  if( zapSound == NULL or
+      bombSound == NULL or
+      matchSound == NULL or
+      shuffleSound == NULL)
     {
       printf("error loading sounds\n");
       exit(-1);

@@ -16,7 +16,7 @@ Game::Game()
   activeTile.setCol(-10);
   activeTile.setType(-1);
 
-  scoreMultiplier = 0; //number of matches in current 'run'
+  scoreMultiplier = 0; //number of matches in current match cascade
   matchMade = false;
 }
 Game::~Game()
@@ -26,9 +26,6 @@ Game::~Game()
 
 bool Game::validLeftMouseClick(int mouse_x, int mouse_y)
 {
-  //include in here a check for all Tiles to be idle
-  //dont allow swaps while other things are going on
-
   return (mouse_x > 0) and (mouse_y > 0) and
     ((mouse_x % GRID_SIZE) > BOX_SIZE) and
     ((mouse_x % GRID_SIZE) < (GRID_SIZE - BOX_SIZE)) and
@@ -91,9 +88,6 @@ void Game::startBoard()
 
 	  effects[i][j].setRow(i);
 	  effects[i][j].setCol(j);
-
-	  //set matchBoard[][] defaults while we're here
-	  // matchBoard[i][j] = false;
 
 	  //set up Tiles
 	  board[i][j].setRow(i);
@@ -161,7 +155,6 @@ void Game::startBoard()
 
 void Game::updateBoard()
 {
-
   static int lower = 0;
   static int upper = 5;
 
@@ -240,8 +233,6 @@ char *Game::matchCheck(Tile currTile)
   //results is a string containing ints of the number of matches in a direction
   // "<left> <right> <above> <below>"
 
-  // printf("matchCheck() \n");
-
   int leftMatches, rightMatches, aboveMatches, belowMatches, row, col, type;
   char *matchString;
   matchString = new char[10];
@@ -318,7 +309,6 @@ void Game::drawBoard()
 
 void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
 {
-  // printf("handleLeftMouseClick() \n");
   int clickRow = mouse_y / GRID_SIZE;
   int clickCol = mouse_x / GRID_SIZE;
 
@@ -329,7 +319,6 @@ void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
 
       if (shouldSwapTiles(clickRow, clickCol))
 	{
-	  //printf("a swap has occurred\n");
 	  //swap - tell tiles they are to move
 	  int activeTileDir = 0, newClickDir = 0;
 
@@ -383,7 +372,6 @@ void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
 	  board[clickRow][clickCol]
 	    .changeState("swap", newClickDir);
 
-	  //printf("activeTile was updated to out of bounds\n");
 	  //reset active tile location
 	  activeTile.setRow(-2);
 	  activeTile.setCol(-2);
@@ -392,7 +380,7 @@ void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
       else
 	{
 	  //click was not adjacent, reset activeTile to current click
-	  //printf("activeTile was updated to this click\n");
+		
 	  //tell activeTile it is not active
 	  if (activeTile.getRow() >= 0 and activeTile.getCol() >= 0)
 	    {
@@ -436,7 +424,7 @@ void Game::handleLeftMouseClick(int mouse_x, int mouse_y)
 	    {
 	      exit(-1);
 	    }
-	  SDL_Delay(100);
+	  SDL_Delay(100); //align sound closer to visuals
 	  //safe to shuffle
 	  for (int i = 0; i < 5; i++)
 	    {
@@ -522,7 +510,6 @@ void Game::match(Tile curr)
 	  //ZAP_V
 	  boostMode = 3;
 	}
-
       //add to score based on boostMode
       switch (boostMode)
 	{
@@ -540,7 +527,6 @@ void Game::match(Tile curr)
 	  score += (scoreConst * scoreMultiplier) + baseScore5;
 	  break;
 	}
-
       //now that the sore is updated, inc score multiplier
       scoreMultiplier++;
 
@@ -562,7 +548,7 @@ void Game::match(Tile curr)
 	      //update swapee swapType to their type - they are staying where they are
 	      board[swapeeRow][swapeeCol].setSwapType(board[swapeeRow][swapeeCol].getType());
 	      //tell them they are idle
-	      board[swapeeRow][swapeeCol].changeState("idle");										 //make sure this doesnt do anything with types
+	      board[swapeeRow][swapeeCol].changeState("idle");
 	      board[curr.getRow()][curr.getCol()].changeState("empty", boostMode); // change my state to empty
 	      break;
 

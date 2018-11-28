@@ -1,10 +1,6 @@
 #ifndef EFFECT_H
 #define EFFECT_H
 
-
-//when a bomb effect starts in Tile.cpp:
-//be sure to tell all surrounding Effects that they are busy
-
 class Effect
 {
  public:

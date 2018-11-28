@@ -6,6 +6,7 @@
 
 class Tile
 {
+	//this class is a mess... everything is public... I got lazy
   public:
 	//states for Tile state machine
 	enum STATE
